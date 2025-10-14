@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Countdown — LDC Study Planner</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  body { 
+    background-color: #f8fafc; 
+    font-family: 'Inter', sans-serif;
+    transition: background-color 0.3s, color 0.3s;
+    overflow-x: hidden;
+  }
+  .progress-bar { 
+    height: 10px; 
+    border-radius: 6px; 
+    background: #e5e7eb; 
+    overflow: hidden; 
+  }
+  .progress-inner { 
+    height: 100%; 
+    background: linear-gradient(to right, #4f46e5, #9333ea); 
+    transition: width 0.5s ease; 
+  }
+  .dark-mode { 
+    background-color: #1f2937; 
+    color: #f9fafb; 
+  }
+  .dark-mode .bg-white { 
+    background-color: #374151 !important; 
+    color: #f9fafb; 
+  }
+  .dark-mode input, .dark-mode select, .dark-mode textarea { 
+    background-color: #4b5563; 
+    color: #f9fafb; 
+    border-color: #6b7280; 
+  }
+  .dark-mode .border-gray-200 {
+    border-color: #4b5563;
+  }
+  .subject-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .subject-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+  .completed {
+    text-decoration: line-through;
+    opacity: 0.7;
+  }
+  .timetable-day {
+    transition: all 0.3s ease;
+  }
+  .timetable-day:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  }
+  .session-card {
+    border-left: 4px solid;
+    transition: all 0.2s ease;
+  }
+  .session-card:hover {
+    transform: translateX(5px);
+  }
+  .login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+  }
+  .login-container.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .login-card {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    transform: translateY(0);
+    transition: transform 0.5s ease, opacity 0.5s ease;
+  }
+  .login-card.hidden {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  .countdown-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+    color: white;
+    flex-direction: column;
+    text-align: center;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+  }
+  .countdown-container.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .countdown-title {
+    font-size: 5rem;
+    font-weight: 900;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    background: linear-gradient(to right, #e53e3e, #ed8936, #ecc94b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 30px rgba(229, 62, 62, 0.5);
+  }
+  .scary-text {
+    font-size: 1.8rem;
+    margin-bottom: 3rem;
+    max-width: 800px;
+    line-height: 1.6;
+    font-weight: 300;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 1s ease forwards;
+  }
+  .scary-text:nth-child(2) {
+    animation-delay: 1s;
+  }
+  .scary-text:nth-child(3) {
+    animation-delay: 2s;
+  }
+  .scary-text:nth-child(4) {
+    animation-delay: 3s;
+  }
+  .enter-button {
+    margin-top: 3rem;
+    padding: 1rem 3rem;
+    font-size: 1.2rem;
+    background: linear-gradient(to right, #e53e3e, #ed8936);
+    border: none;
+    border-radius: 50px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 1s ease 4s forwards;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(229, 62, 62, 0.4);
+  }
+  .enter-button:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(229, 62, 62, 0.6);
+  }
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .pulse {
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  .user-menu {
+    transition: all 0.3s ease;
+    transform-origin: top right;
+  }
+  .user-menu.hidden {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+  }
+  .app-container {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .app-container.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  @media print {
+    .no-print { 
+      display: none !important; 
+    }
+    body { 
+      background: white !important; 
+      color: black !important;
+    }
+    .bg-white { 
+      background: white !important; 
+      border: 1px solid #000 !important; 
+    }
+    .progress-bar {
+      -webkit-print-color-adjust: exact;
+    }
+    .timetable-day {
+      break-inside: avoid;
+    }
+  }
+</style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<!-- Login Screen -->
+<div id="loginScreen" class="login-container">
+  <div id="loginCard" class="login-card w-full max-w-md p-8 mx-4">
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-indigo-700 mb-2"><i class="fas fa-book mr-2"></i>THE COUNTDOWN</h1>
+      <p class="text-gray-600">Your Ultimate LDC 2025 Study Planner</p>
+    </div>
+    
+    <div id="loginForm">
+      <h2 class="text-xl font-semibold text-center mb-6">Welcome Back!</h2>
+      
+      <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-medium mb-2" for="loginEmail">Email</label>
+        <input id="loginEmail" type="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="your@email.com">
+      </div>
+      
+      <div class="mb-6">
+        <label class="block text-gray-700 text-sm font-medium mb-2" for="loginPassword">Password</label>
+        <input id="loginPassword" type="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
+      </div>
+      
+      <button id="loginBtn" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors mb-4">
+        Sign In
+      </button>
+      
+      <div class="text-center">
+        <button id="showRegister" class="text-indigo-600 hover:text-indigo-800 text-sm">
+          Don't have an account? Sign up
+        </button>
+      </div>
+    </div>
+    
+    <div id="registerForm" class="hidden">
+      <h2 class="text-xl font-semibold text-center mb-6">Create Account</h2>
+      
+      <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-medium mb-2" for="registerName">Full Name</label>
+        <input id="registerName" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="John Doe">
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-medium mb-2" for="registerEmail">Email</label>
+        <input id="registerEmail" type="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="your@email.com">
+      </div>
+      
+      <div class="mb-6">
+        <label class="block text-gray-700 text-sm font-medium mb-2" for="registerPassword">Password</label>
+        <input id="registerPassword" type="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
+      </div>
+      
+      <button id="registerBtn" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors mb-4">
+        Create Account
+      </button>
+      
+      <div class="text-center">
+        <button id="showLogin" class="text-indigo-600 hover:text-indigo-800 text-sm">
+          Already have an account? Sign in
+        </button>
+      </div>
+    </div>
+    
+    <div class="mt-6 text-center text-xs text-gray-500">
+      By continuing, you agree to our Terms of Service and Privacy Policy
+    </div>
+  </div>
+</div>
+
+<!-- Countdown Screen -->
+<div id="countdownScreen" class="countdown-container hidden">
+  <h1 class="countdown-title pulse">COUNTDOWN</h1>
+  <p class="scary-text">⏳ Time is slipping through your fingers...</p>
+  <p class="scary-text">🔥 Every moment you waste brings failure closer</p>
+  <p class="scary-text">😱 The exams are coming whether you're ready or not</p>
+  <p class="scary-text">💀 Only the prepared will survive this challenge</p>
+  <button id="enterAppBtn" class="enter-button">
+    ENTER IF YOU DARE <i class="fas fa-arrow-right ml-2"></i>
+  </button>
+</div>
+
+<!-- Main Application -->
+<div id="appContainer" class="app-container hidden">
+
+<!-- Header -->
+<header class="bg-gradient-to-r from-indigo-700 to-purple-700 text-white py-4 shadow-md">
+  <div class="max-w-6xl mx-auto px-6 flex justify-between items-center">
+    <div>
+      <h1 class="text-2xl font-extrabold"><i class="fas fa-book mr-2"></i>THE COUNTDOWN</h1>
+      <p class="text-xs opacity-90">Your Ultimate LDC 2025 Study Planner</p>
+    </div>
+    
+    <!-- User Menu -->
+    <div class="relative">
+      <button id="userMenuBtn" class="flex items-center space-x-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors">
+        <i class="fas fa-user-circle"></i>
+        <span id="userName" class="font-medium">User</span>
+        <i class="fas fa-chevron-down text-xs"></i>
+      </button>
+      
+      <div id="userMenu" class="user-menu hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-10 border border-gray-200">
+        <div class="px-4 py-2 border-b border-gray-100">
+          <p class="text-sm font-medium text-gray-900" id="menuUserName">User Name</p>
+          <p class="text-xs text-gray-500 truncate" id="menuUserEmail">user@example.com</p>
+        </div>
+        <button id="switchUserBtn" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+          <i class="fas fa-exchange-alt mr-2"></i>Switch User
+        </button>
+        <button id="logoutBtn" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+          <i class="fas fa-sign-out-alt mr-2"></i>Sign Out
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Dark Mode Toggle -->
+<div class="text-right max-w-6xl mx-auto p-4 no-print">
+  <button id="toggleDark" class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors">
+    <i class="fas fa-moon mr-2"></i>Toggle Dark Mode
+  </button>
+</div>
+
+<main class="flex-1 max-w-6xl mx-auto p-6">
+
+  <!-- Countdown -->
+  <section class="mb-8 text-center bg-gradient-to-br from-white to-indigo-50 rounded-2xl shadow-md p-6 border border-indigo-100">
+    <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2"><i class="fas fa-clock mr-2"></i>Time Remaining</h2>
+    <div id="countdown" class="text-4xl font-bold text-red-600 mb-1"></div>
+    <p id="scareText" class="text-gray-600 italic"></p>
+  </section>
+
+  <!-- Overall Progress & Statistics -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Overall Progress -->
+    <section class="bg-white rounded-2xl shadow-md p-6">
+      <h2 class="text-xl font-semibold text-indigo-700 mb-4"><i class="fas fa-chart-line mr-2"></i>Overall Progress</h2>
+      <div class="progress-bar mb-2">
+        <div id="progressBar" class="progress-inner" style="width:0%;"></div>
+      </div>
+      <p id="progressText" class="text-sm text-gray-600 text-right">0% Completed</p>
+    </section>
+
+    <!-- Study Statistics -->
+    <section class="bg-white rounded-2xl shadow-md p-6">
+      <h2 class="text-xl font-semibold text-indigo-700 mb-4"><i class="fas fa-chart-pie mr-2"></i>Study Statistics</h2>
+      <div id="stats" class="grid grid-cols-2 gap-4 text-center">
+        <!-- Stats will be populated here -->
+      </div>
+    </section>
+  </div>
+
+  <!-- Study Plan Generator -->
+  <section class="bg-white p-6 rounded-2xl shadow-md mb-8">
+    <h2 class="text-xl font-semibold text-indigo-700 mb-4"><i class="fas fa-calendar-plus mr-2"></i>Study Plan Generator</h2>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+      <label class="block">
+        <span class="text-sm text-gray-600">Select Date</span>
+        <input id="manualDate" type="date" class="mt-1 w-full border rounded-lg px-3 py-2"/>
+      </label>
+      <label class="block">
+        <span class="text-sm text-gray-600">Study Duration (hours)</span>
+        <input id="studyDuration" type="number" min="0.5" max="8" step="0.5" value="2" 
+               class="mt-1 w-full border rounded-lg px-3 py-2"/>
+      </label>
+      <label class="block">
+        <span class="text-sm text-gray-600">Select Subjects</span>
+        <select id="manualSubjects" multiple class="mt-1 w-full border rounded-lg px-3 py-2 h-32"></select>
+      </label>
+      <div class="flex items-end">
+        <button id="addToPlan" class="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 w-full transition-colors">
+          <i class="fas fa-plus mr-2"></i>Add to Plan
+        </button>
+      </div>
+    </div>
+    <div class="text-right no-print">
+      <button id="printBtn" class="px-5 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+        <i class="fas fa-print mr-2"></i>Print / Save PDF
+      </button>
+      <button id="clearPlanBtn" class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors ml-2">
+        <i class="fas fa-trash mr-2"></i>Clear Plan
+      </button>
+    </div>
+  </section>
+
+  <!-- Units -->
+  <section id="unitsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10"></section>
+
+  <!-- Generated Plan -->
+  <section id="planSection" class="bg-white rounded-2xl shadow-md p-6 hidden">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-xl font-semibold text-indigo-700"><i class="fas fa-calendar-alt mr-2"></i>Your Study Schedule</h2>
+      <div class="flex items-center space-x-4">
+        <span id="planStats" class="text-sm text-gray-500"></span>
+        <button id="toggleView" class="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-sm hover:bg-indigo-200 transition-colors">
+          <i class="fas fa-th-large mr-1"></i>Toggle View
+        </button>
+      </div>
+    </div>
+    
+    <!-- Timetable View -->
+    <div id="timetableView" class="space-y-6">
+      <!-- Timetable will be populated here -->
+    </div>
+    
+    <!-- List View (Hidden by default) -->
+    <div id="listView" class="hidden space-y-4">
+      <!-- List view will be populated here -->
+    </div>
+  </section>
+
+</main>
+
+<footer class="text-center text-gray-500 text-sm py-4 border-t no-print">
+  &copy; 2025 THE COUNTDOWN | LDC Study Planner
+</footer>
+
+</div> <!-- End of appContainer -->
+
+<script>
+// Set dates dynamically
+const currentYear = new Date().getFullYear();
+const startTime = new Date(`${currentYear}-10-14T18:18:00`);
+const deadline = new Date(`${currentYear}-12-07T23:59:59`);
+
+const scareSayings = [
+  "⏳ Time is slipping away!",
+  "🔥 Every second counts!",
+  "😱 Your exams are almost here!",
+  "💼 Only the prepared will pass!",
+  "⚖️ Justice favors the diligent!",
+  "🚨 Wake up, Counsel! The clock is ticking!",
+  "📖 Read now — rest later!",
+  "🎯 Focus is your superpower!",
+  "💪 Consistency beats intensity!",
+  "🧠 Knowledge is your best weapon!"
+];
+
+const alertAudio = new Audio("https://www.soundjay.com/button/beep-07.mp3");
+
+const units = [
+  { 
+    title: "Civil Proceedings", 
+    subjects: ["Pleadings", "Interlocutory Applications", "Trials", "Judgment & Appeals", "Execution of Decrees"],
+    color: "from-blue-500 to-cyan-500",
+    borderColor: "border-l-blue-500"
+  },
+  { 
+    title: "Criminal Proceedings", 
+    subjects: ["Jurisdiction", "Charge & Information", "Bail & Remand", "Trial Process", "Sentencing & Appeals"],
+    color: "from-red-500 to-pink-500",
+    borderColor: "border-l-red-500"
+  },
+  { 
+    title: "Family Law Practice", 
+    subjects: ["Marriage & Divorce", "Custody & Maintenance", "Adoption & Guardianship", "Matrimonial Property", "Domestic Violence"],
+    color: "from-green-500 to-emerald-500",
+    borderColor: "border-l-green-500"
+  },
+  { 
+    title: "Corporate & Commercial Practice", 
+    subjects: ["Company Formation", "Contracts", "Insolvency", "Mergers & Acquisitions", "Taxation"],
+    color: "from-purple-500 to-indigo-500",
+    borderColor: "border-l-purple-500"
+  },
+  { 
+    title: "Land Practice", 
+    subjects: ["Land Registration", "Conveyancing", "Mortgages", "Leases", "Dispute Resolution"],
+    color: "from-amber-500 to-orange-500",
+    borderColor: "border-l-amber-500"
+  }
+];
+
+let studyPlan = []; // store all manual plans
+let isTimetableView = true; // Track current view mode
+let currentUser = null; // Track current user
+
+// User management functions
+function getUsers() {
+  const users = localStorage.getItem('ldcUsers');
+  return users ? JSON.parse(users) : {};
+}
+
+function saveUsers(users) {
+  localStorage.setItem('ldcUsers', JSON.stringify(users));
+}
+
+function getCurrentUserData() {
+  if (!currentUser) return null;
+  const users = getUsers();
+  return users[currentUser] || null;
+}
+
+function saveCurrentUserData(userData) {
+  if (!currentUser) return;
+  const users = getUsers();
+  users[currentUser] = userData;
+  saveUsers(users);
+}
+
+// Initialize the app
+function init() {
+  // Check if user is already logged in
+  const savedUser = localStorage.getItem('currentUser');
+  if (savedUser) {
+    currentUser = savedUser;
+    showCountdownScreen();
+  } else {
+    showLoginScreen();
+  }
+  
+  // Set up login/register event listeners
+  document.getElementById("loginBtn").addEventListener("click", handleLogin);
+  document.getElementById("registerBtn").addEventListener("click", handleRegister);
+  document.getElementById("showRegister").addEventListener("click", showRegisterForm);
+  document.getElementById("showLogin").addEventListener("click", showLoginForm);
+  document.getElementById("enterAppBtn").addEventListener("click", showAppScreen);
+  document.getElementById("userMenuBtn").addEventListener("click", toggleUserMenu);
+  document.getElementById("switchUserBtn").addEventListener("click", switchUser);
+  document.getElementById("logoutBtn").addEventListener("click", handleLogout);
+  
+  // Close user menu when clicking outside
+  document.addEventListener('click', (e) => {
+    const userMenu = document.getElementById('userMenu');
+    const userMenuBtn = document.getElementById('userMenuBtn');
+    if (userMenu && userMenuBtn && !userMenu.contains(e.target) && !userMenuBtn.contains(e.target)) {
+      userMenu.classList.add('hidden');
+    }
+  });
+  
+  // Allow Enter key to submit forms
+  document.getElementById('loginEmail').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      handleLogin();
+    }
+  });
+  
+  document.getElementById('loginPassword').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      handleLogin();
+    }
+  });
+  
+  document.getElementById('registerName').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      handleRegister();
+    }
+  });
+  
+  document.getElementById('registerEmail').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      handleRegister();
+    }
+  });
+  
+  document.getElementById('registerPassword').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      handleRegister();
+    }
+  });
+}
+
+// Show login screen
+function showLoginScreen() {
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('loginCard').classList.remove('hidden');
+  document.getElementById('countdownScreen').classList.add('hidden');
+  document.getElementById('appContainer').classList.add('hidden');
+  
+  // Clear any previous form data
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('registerName').value = '';
+  document.getElementById('registerEmail').value = '';
+  document.getElementById('registerPassword').value = '';
+  
+  // Show login form by default
+  showLoginForm();
+}
+
+// Show countdown screen
+function showCountdownScreen() {
+  // First hide the login screen
+  document.getElementById('loginScreen').classList.add('hidden');
+  
+  // Then show the countdown screen
+  setTimeout(() => {
+    document.getElementById('countdownScreen').classList.remove('hidden');
+  }, 500);
+}
+
+// Show app screen with smooth transition
+function showAppScreen() {
+  // First hide the countdown screen
+  document.getElementById('countdownScreen').classList.add('hidden');
+  
+  // Then show the app after animation completes
+  setTimeout(() => {
+    document.getElementById('appContainer').classList.remove('hidden');
+    document.getElementById('appContainer').classList.add('visible');
+    
+    // Load user data
+    const userData = getCurrentUserData();
+    if (userData) {
+      document.getElementById('userName').textContent = userData.name;
+      document.getElementById('menuUserName').textContent = userData.name;
+      document.getElementById('menuUserEmail').textContent = currentUser;
+      
+      // Load user's study plan and progress
+      studyPlan = userData.studyPlan || [];
+      
+      // Initialize app components
+      initializeApp();
+    }
+  }, 800);
+}
+
+// Initialize app components
+function initializeApp() {
+  // Set default date to today
+  document.getElementById("manualDate").valueAsDate = new Date();
+  
+  populateSubjects();
+  renderUnits();
+  updateProgress();
+  updateCountdown();
+  renderStudyPlan();
+  updateStatistics();
+  
+  // Set up event listeners
+  document.getElementById("addToPlan").addEventListener("click", addToPlan);
+  document.getElementById("printBtn").addEventListener("click", () => window.print());
+  document.getElementById("clearPlanBtn").addEventListener("click", clearStudyPlan);
+  document.getElementById("toggleDark").addEventListener("click", toggleDarkMode);
+  document.getElementById("toggleView").addEventListener("click", toggleView);
+  
+  // Set up countdown interval
+  setInterval(updateCountdown, 1000);
+}
+
+// Show login form
+function showLoginForm() {
+  document.getElementById('loginForm').classList.remove('hidden');
+  document.getElementById('registerForm').classList.add('hidden');
+  
+  // Clear any existing errors
+  removeAuthErrors();
+}
+
+// Show register form
+function showRegisterForm() {
+  document.getElementById('loginForm').classList.add('hidden');
+  document.getElementById('registerForm').classList.remove('hidden');
+  
+  // Clear any existing errors
+  removeAuthErrors();
+}
+
+// Handle user login
+function handleLogin() {
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+  
+  if (!email || !password) {
+    showAuthError('Please enter both email and password', 'loginForm');
+    return;
+  }
+  
+  const users = getUsers();
+  
+  if (users[email] && users[email].password === password) {
+    // Successful login
+    currentUser = email;
+    localStorage.setItem('currentUser', email);
+    showCountdownScreen();
+  } else {
+    showAuthError('Invalid email or password', 'loginForm');
+  }
+}
+
+// Handle user registration
+function handleRegister() {
+  const name = document.getElementById('registerName').value;
+  const email = document.getElementById('registerEmail').value;
+  const password = document.getElementById('registerPassword').value;
+  
+  if (!name || !email || !password) {
+    showAuthError('Please fill in all fields', 'registerForm');
+    return;
+  }
+  
+  if (password.length < 6) {
+    showAuthError('Password must be at least 6 characters long', 'registerForm');
+    return;
+  }
+  
+  const users = getUsers();
+  
+  if (users[email]) {
+    showAuthError('An account with this email already exists', 'registerForm');
+    return;
+  }
+  
+  // Create new user
+  users[email] = {
+    name: name,
+    password: password,
+    studyPlan: [],
+    progress: {},
+    createdAt: new Date().toISOString()
+  };
+  
+  saveUsers(users);
+  
+  // Auto-login after registration
+  currentUser = email;
+  localStorage.setItem('currentUser', email);
+  showCountdownScreen();
+}
+
+// Handle user logout
+function handleLogout() {
+  currentUser = null;
+  localStorage.removeItem('currentUser');
+  document.getElementById('userMenu').classList.add('hidden');
+  
+  // Show login screen with animation
+  document.getElementById('appContainer').classList.remove('visible');
+  setTimeout(() => {
+    showLoginScreen();
+  }, 500);
+}
+
+// Switch user (go back to login screen)
+function switchUser() {
+  handleLogout();
+}
+
+// Toggle user menu
+function toggleUserMenu() {
+  document.getElementById('userMenu').classList.toggle('hidden');
+}
+
+// Show authentication error
+function showAuthError(message, formId) {
+  // Remove existing error if any
+  removeAuthErrors();
+  
+  // Create error element
+  const errorEl = document.createElement('div');
+  errorEl.className = 'auth-error bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4';
+  errorEl.textContent = message;
+  
+  // Insert error
+  const currentForm = document.getElementById(formId);
+  currentForm.insertBefore(errorEl, currentForm.firstChild);
+  
+  // Auto-remove after 5 seconds
+  setTimeout(() => {
+    if (errorEl.parentNode) {
+      errorEl.remove();
+    }
+  }, 5000);
+}
+
+// Remove authentication errors
+function removeAuthErrors() {
+  const existingErrors = document.querySelectorAll('.auth-error');
+  existingErrors.forEach(error => error.remove());
+}
+
+// Populate multi-select subjects dropdown
+function populateSubjects() {
+  const select = document.getElementById("manualSubjects");
+  select.innerHTML = "";
+  
+  units.forEach(unit => {
+    const group = document.createElement("optgroup");
+    group.label = unit.title;
+    
+    unit.subjects.forEach(sub => {
+      const option = document.createElement("option");
+      option.value = sub;
+      option.textContent = sub;
+      group.appendChild(option);
+    });
+    
+    select.appendChild(group);
+  });
+}
+
+// Countdown
+function updateCountdown() {
+  const now = new Date();
+  const countdownEl = document.getElementById("countdown");
+  const scareTextEl = document.getElementById("scareText");
+  
+  if (now < startTime) {
+    countdownEl.textContent = "⏳ Countdown starts at 18:18 today!";
+    scareTextEl.textContent = "Get ready, Counsel!";
+    return;
+  }
+  
+  const diff = deadline - now;
+  if (diff <= 0) {
+    countdownEl.textContent = "🚨 EXAMS HAVE BEGUN!";
+    scareTextEl.textContent = "All the best, Counsel!";
+    return;
+  }
+  
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((diff / (1000 * 60)) % 60);
+  const seconds = Math.floor((diff / 1000) % 60);
+  
+  countdownEl.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s left`;
+  scareTextEl.textContent = scareSayings[Math.floor(Math.random() * scareSayings.length)];
+  
+  if (days < 10) {
+    alertAudio.play().catch(e => console.log("Audio play failed:", e));
+  }
+}
+
+// Render Units with checkboxes
+function renderUnits() {
+  const container = document.getElementById("unitsContainer");
+  container.innerHTML = "";
+  
+  const userData = getCurrentUserData();
+  const userProgress = userData?.progress || {};
+  
+  units.forEach((unit, uIndex) => {
+    const card = document.createElement("div");
+    card.className = `bg-white border border-gray-200 rounded-2xl shadow-sm p-5 subject-card`;
+    
+    const title = document.createElement("h3");
+    title.className = `font-bold text-white text-lg mb-3 p-2 rounded-lg bg-gradient-to-r ${unit.color}`;
+    title.textContent = unit.title;
+    card.appendChild(title);
+    
+    const list = document.createElement("ul");
+    list.className = "space-y-2";
+    
+    unit.subjects.forEach((subject, sIndex) => {
+      const li = document.createElement("li");
+      li.className = "flex items-center space-x-2";
+      
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.className = "w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500";
+      
+      const label = document.createElement("label");
+      label.textContent = subject;
+      label.className = "text-gray-700 flex-1";
+      
+      const key = `unit${uIndex}_subject${sIndex}`;
+      checkbox.checked = userProgress[key] === true;
+      
+      if (checkbox.checked) {
+        label.classList.add("completed");
+      }
+      
+      checkbox.addEventListener("change", () => {
+        // Save progress to user data
+        const userData = getCurrentUserData();
+        if (!userData.progress) userData.progress = {};
+        userData.progress[key] = checkbox.checked;
+        saveCurrentUserData(userData);
+        
+        if (checkbox.checked) {
+          label.classList.add("completed");
+          showCompletionAlert(subject, unit.title);
+        } else {
+          label.classList.remove("completed");
+        }
+        
+        updateProgress();
+        updateStatistics();
+        renderStudyPlan();
+      });
+      
+      li.appendChild(checkbox);
+      li.appendChild(label);
+      list.appendChild(li);
+    });
+    
+    card.appendChild(list);
+    container.appendChild(card);
+  });
+}
+
+// Show completion alert
+function showCompletionAlert(subject, unitTitle) {
+  // Create a custom alert instead of using the default one
+  const alertDiv = document.createElement("div");
+  alertDiv.className = "fixed top-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm";
+  alertDiv.innerHTML = `
+    <div class="flex items-center">
+      <i class="fas fa-check-circle mr-2 text-xl"></i>
+      <div>
+        <p class="font-semibold">Subject Completed!</p>
+        <p class="text-sm">${subject} (${unitTitle})</p>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(alertDiv);
+  
+  // Remove after 3 seconds
+  setTimeout(() => {
+    alertDiv.remove();
+  }, 3000);
+}
+
+// Overall progress
+function updateProgress() {
+  const total = units.reduce((sum, u) => sum + u.subjects.length, 0);
+  const userData = getCurrentUserData();
+  const userProgress = userData?.progress || {};
+  
+  const done = units.flatMap((u, i) => 
+    u.subjects.map((_, j) => userProgress[`unit${i}_subject${j}`] === true)
+  ).filter(x => x).length;
+  
+  const percent = Math.round((done / total) * 100);
+  document.getElementById("progressBar").style.width = percent + "%";
+  document.getElementById("progressText").textContent = `${done}/${total} Subjects (${percent}%) Completed`;
+}
+
+// Update statistics
+function updateStatistics() {
+  const total = units.reduce((sum, u) => sum + u.subjects.length, 0);
+  const userData = getCurrentUserData();
+  const userProgress = userData?.progress || {};
+  
+  const done = units.flatMap((u, i) => 
+    u.subjects.map((_, j) => userProgress[`unit${i}_subject${j}`] === true)
+  ).filter(x => x).length;
+  
+  const remaining = total - done;
+  const totalSessions = studyPlan.reduce((sum, day) => sum + day.sessions.length, 0);
+  
+  const statsHTML = `
+    <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+      <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">${done}</div>
+      <div class="text-sm text-blue-800 dark:text-blue-300">Completed</div>
+    </div>
+    <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+      <div class="text-2xl font-bold text-green-600 dark:text-green-400">${remaining}</div>
+      <div class="text-sm text-green-800 dark:text-green-300">Remaining</div>
+    </div>
+    <div class="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+      <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">${totalSessions}</div>
+      <div class="text-sm text-purple-800 dark:text-purple-300">Sessions</div>
+    </div>
+    <div class="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+      <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">${Math.round((done/total)*100)}%</div>
+      <div class="text-sm text-orange-800 dark:text-orange-300">Progress</div>
+    </div>
+  `;
+  
+  document.getElementById('stats').innerHTML = statsHTML;
+}
+
+// Add manual plan
+function addToPlan() {
+  const date = document.getElementById("manualDate").value;
+  const duration = document.getElementById("studyDuration").value;
+  const selected = Array.from(document.getElementById("manualSubjects").selectedOptions).map(o => o.value);
+  
+  if (!date || selected.length === 0) {
+    showErrorAlert("Please select a date and at least one subject!");
+    return;
+  }
+  
+  studyPlan.push({ date, duration, sessions: selected });
+  
+  // Save to user data
+  const userData = getCurrentUserData();
+  userData.studyPlan = studyPlan;
+  saveCurrentUserData(userData);
+  
+  renderStudyPlan();
+  updateStatistics();
+  
+  // Clear selection
+  document.getElementById("manualSubjects").selectedIndex = -1;
+}
+
+// Show error alert
+function showErrorAlert(message) {
+  const alertDiv = document.createElement("div");
+  alertDiv.className = "fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm";
+  alertDiv.innerHTML = `
+    <div class="flex items-center">
+      <i class="fas fa-exclamation-triangle mr-2 text-xl"></i>
+      <div>
+        <p class="font-semibold">Attention Needed</p>
+        <p class="text-sm">${message}</p>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(alertDiv);
+  
+  // Remove after 3 seconds
+  setTimeout(() => {
+    alertDiv.remove();
+  }, 3000);
+}
+
+// Clear study plan
+function clearStudyPlan() {
+  if (studyPlan.length === 0) {
+    showErrorAlert("Study plan is already empty!");
+    return;
+  }
+  
+  if (confirm("Are you sure you want to clear your entire study plan?")) {
+    studyPlan = [];
+    
+    // Save to user data
+    const userData = getCurrentUserData();
+    userData.studyPlan = studyPlan;
+    saveCurrentUserData(userData);
+    
+    renderStudyPlan();
+    updateStatistics();
+  }
+}
+
+// Toggle between timetable and list view
+function toggleView() {
+  const timetable = document.getElementById("timetableView");
+  const list = document.getElementById("listView");
+  const toggleBtn = document.getElementById("toggleView");
+  
+  isTimetableView = !isTimetableView;
+  
+  if (isTimetableView) {
+    timetable.classList.remove("hidden");
+    list.classList.add("hidden");
+    toggleBtn.innerHTML = '<i class="fas fa-th-large mr-1"></i>Toggle View';
+  } else {
+    timetable.classList.add("hidden");
+    list.classList.remove("hidden");
+    toggleBtn.innerHTML = '<i class="fas fa-list mr-1"></i>Toggle View';
+  }
+  
+  renderStudyPlan();
+}
+
+// Render study plan in both views
+function renderStudyPlan() {
+  const timetable = document.getElementById("timetableView");
+  const list = document.getElementById("listView");
+  const planSection = document.getElementById("planSection");
+  const planStats = document.getElementById("planStats");
+  
+  timetable.innerHTML = "";
+  list.innerHTML = "";
+  
+  if (studyPlan.length === 0) {
+    planSection.classList.add("hidden");
+    return;
+  }
+  
+  planSection.classList.remove("hidden");
+  
+  // Sort study plan by date
+  studyPlan.sort((a, b) => new Date(a.date) - new Date(b.date));
+  
+  // Calculate plan stats
+  const totalSessions = studyPlan.reduce((sum, day) => sum + day.sessions.length, 0);
+  const totalHours = studyPlan.reduce((sum, day) => sum + (day.sessions.length * parseFloat(day.duration || 2)), 0);
+  planStats.textContent = `${studyPlan.length} days, ${totalSessions} sessions, ${totalHours} hours`;
+  
+  // Group study plan by week
+  const weeks = groupStudyPlanByWeek(studyPlan);
+  
+  // Render timetable view
+  renderTimetableView(weeks, timetable);
+  
+  // Render list view
+  renderListView(studyPlan, list);
+}
+
+// Group study plan by week
+function groupStudyPlanByWeek(studyPlan) {
+  const weeks = [];
+  let currentWeek = [];
+  let currentWeekStart = null;
+  
+  studyPlan.forEach(day => {
+    const date = new Date(day.date);
+    const weekStart = getWeekStart(date);
+    
+    if (!currentWeekStart || weekStart.getTime() !== currentWeekStart.getTime()) {
+      if (currentWeek.length > 0) {
+        weeks.push(currentWeek);
+      }
+      currentWeek = [day];
+      currentWeekStart = weekStart;
+    } else {
+      currentWeek.push(day);
+    }
+  });
+  
+  if (currentWeek.length > 0) {
+    weeks.push(currentWeek);
+  }
+  
+  return weeks;
+}
+
+// Get the start of the week (Monday)
+function getWeekStart(date) {
+  const day = date.getDay();
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is Sunday
+  return new Date(date.setDate(diff));
+}
+
+// Render timetable view
+function renderTimetableView(weeks, container) {
+  weeks.forEach((week, weekIndex) => {
+    const weekElement = document.createElement("div");
+    weekElement.className = "mb-8";
+    
+    // Week header
+    const weekHeader = document.createElement("div");
+    weekHeader.className = "flex justify-between items-center mb-4 p-3 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-lg";
+    
+    const weekTitle = document.createElement("h3");
+    weekTitle.className = "font-bold text-indigo-700 text-lg";
+    weekTitle.textContent = `Week ${weekIndex + 1} (${formatDate(week[0].date)} - ${formatDate(week[week.length-1].date)})`;
+    
+    const weekStats = document.createElement("div");
+    weekStats.className = "text-sm text-indigo-600";
+    const weekSessions = week.reduce((sum, day) => sum + day.sessions.length, 0);
+    weekStats.textContent = `${weekSessions} sessions`;
+    
+    weekHeader.appendChild(weekTitle);
+    weekHeader.appendChild(weekStats);
+    weekElement.appendChild(weekHeader);
+    
+    // Days grid
+    const daysGrid = document.createElement("div");
+    daysGrid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4";
+    
+    week.forEach(day => {
+      const dayElement = document.createElement("div");
+      dayElement.className = "timetable-day bg-white border border-gray-200 rounded-xl p-4 shadow-sm";
+      
+      // Day header
+      const dayHeader = document.createElement("div");
+      dayHeader.className = "flex justify-between items-center mb-3 pb-2 border-b border-gray-100";
+      
+      const dateElement = document.createElement("div");
+      dateElement.className = "font-semibold text-indigo-700";
+      dateElement.innerHTML = `<i class="far fa-calendar mr-2"></i>${formatDate(day.date)}`;
+      
+      const dayStats = document.createElement("div");
+      dayStats.className = "flex items-center space-x-2";
+      
+      const durationElement = document.createElement("span");
+      durationElement.className = "text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full";
+      durationElement.innerHTML = `<i class="far fa-clock mr-1"></i>${day.duration || 2}h/session`;
+      
+      const progressElement = document.createElement("span");
+      const progress = calculateDayProgress(day);
+      progressElement.className = `text-xs px-2 py-1 rounded-full ${progress === 100 ? 'bg-green-100 text-green-700' : progress >= 50 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`;
+      progressElement.textContent = `${progress}%`;
+      
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "text-red-400 hover:text-red-600 transition-colors";
+      deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
+      deleteBtn.onclick = () => {
+        const index = studyPlan.findIndex(d => d.date === day.date);
+        if (index !== -1) {
+          studyPlan.splice(index, 1);
+          
+          // Save to user data
+          const userData = getCurrentUserData();
+          userData.studyPlan = studyPlan;
+          saveCurrentUserData(userData);
+          
+          renderStudyPlan();
+          updateStatistics();
+        }
+      };
+      
+      dayStats.appendChild(durationElement);
+      dayStats.appendChild(progressElement);
+      dayStats.appendChild(deleteBtn);
+      
+      dayHeader.appendChild(dateElement);
+      dayHeader.appendChild(dayStats);
+      dayElement.appendChild(dayHeader);
+      
+      // Sessions list
+      const sessionsList = document.createElement("div");
+      sessionsList.className = "space-y-2";
+      
+      day.sessions.forEach(session => {
+        const sessionElement = document.createElement("div");
+        sessionElement.className = "session-card bg-gray-50 p-3 rounded-lg";
+        
+        // Find which unit this session belongs to
+        const unit = units.find(u => u.subjects.includes(session));
+        const userData = getCurrentUserData();
+        const userProgress = userData?.progress || {};
+        const isCompleted = unit && userProgress[`unit${units.indexOf(unit)}_subject${unit.subjects.indexOf(session)}`] === true;
+        
+        sessionElement.className += ` ${unit ? unit.borderColor : 'border-l-gray-400'} ${isCompleted ? 'opacity-70' : ''}`;
+        
+        const sessionContent = document.createElement("div");
+        sessionContent.className = "flex justify-between items-center";
+        
+        const sessionTitle = document.createElement("div");
+        sessionTitle.className = `font-medium ${isCompleted ? 'line-through text-gray-500' : 'text-gray-700'}`;
+        sessionTitle.textContent = session;
+        
+        const sessionStatus = document.createElement("div");
+        sessionStatus.className = "text-xs";
+        
+        if (isCompleted) {
+          sessionStatus.innerHTML = '<i class="fas fa-check-circle text-green-500"></i>';
+        } else {
+          sessionStatus.innerHTML = '<i class="far fa-circle text-gray-400"></i>';
+        }
+        
+        sessionContent.appendChild(sessionTitle);
+        sessionContent.appendChild(sessionStatus);
+        sessionElement.appendChild(sessionContent);
+        
+        sessionsList.appendChild(sessionElement);
+      });
+      
+      dayElement.appendChild(sessionsList);
+      daysGrid.appendChild(dayElement);
+    });
+    
+    weekElement.appendChild(daysGrid);
+    container.appendChild(weekElement);
+  });
+}
+
+// Render list view
+function renderListView(studyPlan, container) {
+  studyPlan.forEach((day, index) => {
+    const dayElement = document.createElement("div");
+    dayElement.className = "border border-gray-200 rounded-lg p-4 hover:shadow-md transition";
+    
+    const progress = calculateDayProgress(day);
+    
+    dayElement.innerHTML = `
+      <div class="flex justify-between mb-2">
+        <span class="font-semibold text-indigo-700">${formatDate(day.date)}</span>
+        <div class="flex items-center space-x-2">
+          <span class="text-sm ${progress === 100 ? 'text-green-500' : progress >= 50 ? 'text-yellow-500' : 'text-red-500'}">${progress}% Completed</span>
+          <button class="text-red-400 hover:text-red-600 delete-day" data-index="${index}">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <div class="text-sm text-gray-500 mb-2">
+        <i class="far fa-clock mr-1"></i>${day.duration || 2} hours per session
+      </div>
+      <ul class="list-disc ml-5 text-sm space-y-1">
+        ${day.sessions.map(session => {
+          const unit = units.find(u => u.subjects.includes(session));
+          const userData = getCurrentUserData();
+          const userProgress = userData?.progress || {};
+          const isCompleted = unit && userProgress[`unit${units.indexOf(unit)}_subject${unit.subjects.indexOf(session)}`] === true;
+          return `<li class="${isCompleted ? 'line-through text-gray-400' : ''}">${session} ${isCompleted ? '<i class="fas fa-check-circle text-green-500 ml-1"></i>' : ''}</li>`;
+        }).join("")}
+      </ul>
+    `;
+    
+    container.appendChild(dayElement);
+  });
+  
+  // Add event listeners to delete buttons
+  document.querySelectorAll('.delete-day').forEach(button => {
+    button.addEventListener('click', function() {
+      const index = parseInt(this.getAttribute('data-index'));
+      studyPlan.splice(index, 1);
+      
+      // Save to user data
+      const userData = getCurrentUserData();
+      userData.studyPlan = studyPlan;
+      saveCurrentUserData(userData);
+      
+      renderStudyPlan();
+      updateStatistics();
+    });
+  });
+}
+
+// Calculate day progress
+function calculateDayProgress(day) {
+  const userData = getCurrentUserData();
+  const userProgress = userData?.progress || {};
+  
+  const done = day.sessions.filter(session => {
+    return units.some((unit, uIndex) => 
+      unit.subjects.includes(session) && 
+      userProgress[`unit${uIndex}_subject${unit.subjects.indexOf(session)}`] === true
+    );
+  }).length;
+  
+  return Math.round((done / day.sessions.length) * 100) || 0;
+}
+
+// Format date for display
+function formatDate(dateString) {
+  const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString('en-US', options);
+}
+
+// Toggle dark mode
+function toggleDarkMode() {
+  document.body.classList.toggle("dark-mode");
+  const button = document.getElementById("toggleDark");
+  
+  if (document.body.classList.contains("dark-mode")) {
+    button.innerHTML = '<i class="fas fa-sun mr-2"></i>Toggle Light Mode';
+  } else {
+    button.innerHTML = '<i class="fas fa-moon mr-2"></i>Toggle Dark Mode';
+  }
+}
+
+// Initialize the app when DOM is loaded
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
