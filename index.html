@@ -7,89 +7,153 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-  body { 
-    background-color: #f8fafc; 
-    font-family: 'Inter', sans-serif;
-    transition: background-color 0.3s, color 0.3s;
+  :root {
+    --primary: #4f46e5;
+    --primary-dark: #4338ca;
+    --secondary: #9333ea;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --light-bg: #f8fafc;
+    --dark-bg: #1f2937;
+    --card-bg: #ffffff;
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--light-bg);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
     overflow-x: hidden;
   }
-  .progress-bar { 
-    height: 10px; 
-    border-radius: 6px; 
-    background: #e5e7eb; 
-    overflow: hidden; 
+
+  .dark-mode {
+    --light-bg: #111827;
+    --card-bg: #1f2937;
+    --text-primary: #f9fafb;
+    --text-secondary: #d1d5db;
   }
-  .progress-inner { 
-    height: 100%; 
-    background: linear-gradient(to right, #4f46e5, #9333ea); 
-    transition: width 0.5s ease; 
+
+  .smooth-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  .dark-mode { 
-    background-color: #1f2937; 
-    color: #f9fafb; 
-  }
-  .dark-mode .bg-white { 
-    background-color: #374151 !important; 
-    color: #f9fafb; 
-  }
-  .dark-mode input, .dark-mode select, .dark-mode textarea { 
-    background-color: #4b5563; 
-    color: #f9fafb; 
-    border-color: #6b7280; 
-  }
-  .dark-mode .border-gray-200 {
-    border-color: #4b5563;
-  }
-  .subject-card {
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  .subject-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  }
-  .completed {
-    text-decoration: line-through;
-    opacity: 0.7;
-  }
-  .timetable-day {
+
+  .card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
     transition: all 0.3s ease;
   }
-  .timetable-day:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+
+  .card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
   }
-  .session-card {
-    border-left: 4px solid;
-    transition: all 0.2s ease;
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
   }
-  .session-card:hover {
-    transform: translateX(5px);
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
   }
+
+  .progress-bar {
+    height: 8px;
+    border-radius: 4px;
+    background: #e5e7eb;
+    overflow: hidden;
+  }
+
+  .progress-inner {
+    height: 100%;
+    background: linear-gradient(to right, var(--primary), var(--secondary));
+    transition: width 0.5s ease;
+  }
+
+  .sidebar {
+    width: 260px;
+    background: var(--card-bg);
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 40;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 30;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .overlay.open {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .main-content {
+    margin-left: 0;
+    transition: margin-left 0.3s ease;
+    min-height: 100vh;
+  }
+
+  @media (min-width: 1024px) {
+    .sidebar {
+      transform: translateX(0);
+    }
+    
+    .main-content {
+      margin-left: 260px;
+    }
+    
+    .sidebar-toggle {
+      display: none;
+    }
+  }
+
   .login-container {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    transition: opacity 0.5s ease, visibility 0.5s ease;
+    padding: 1rem;
   }
-  .login-container.hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-  }
+
   .login-card {
-    backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.9);
+    width: 100%;
+    max-width: 400px;
+    background: rgba(255, 255, 255, 0.95);
     border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    transform: translateY(0);
-    transition: transform 0.5s ease, opacity 0.5s ease;
+    padding: 2rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   }
-  .login-card.hidden {
-    transform: translateY(-20px);
-    opacity: 0;
-  }
+
   .countdown-container {
     min-height: 100vh;
     display: flex;
@@ -99,15 +163,11 @@
     color: white;
     flex-direction: column;
     text-align: center;
-    transition: opacity 0.8s ease, visibility 0.8s ease;
+    padding: 1rem;
   }
-  .countdown-container.hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-  }
+
   .countdown-title {
-    font-size: 5rem;
+    font-size: 3rem;
     font-weight: 900;
     margin-bottom: 2rem;
     text-transform: uppercase;
@@ -115,11 +175,17 @@
     background: linear-gradient(to right, #e53e3e, #ed8936, #ecc94b);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 30px rgba(229, 62, 62, 0.5);
   }
+
+  @media (min-width: 768px) {
+    .countdown-title {
+      font-size: 4rem;
+    }
+  }
+
   .scary-text {
-    font-size: 1.8rem;
-    margin-bottom: 3rem;
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
     max-width: 800px;
     line-height: 1.6;
     font-weight: 300;
@@ -127,99 +193,320 @@
     transform: translateY(20px);
     animation: fadeInUp 1s ease forwards;
   }
-  .scary-text:nth-child(2) {
-    animation-delay: 1s;
+
+  @media (min-width: 768px) {
+    .scary-text {
+      font-size: 1.5rem;
+    }
   }
-  .scary-text:nth-child(3) {
-    animation-delay: 2s;
-  }
-  .scary-text:nth-child(4) {
-    animation-delay: 3s;
-  }
-  .enter-button {
-    margin-top: 3rem;
-    padding: 1rem 3rem;
-    font-size: 1.2rem;
-    background: linear-gradient(to right, #e53e3e, #ed8936);
-    border: none;
-    border-radius: 50px;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeInUp 1s ease 4s forwards;
-    transition: all 0.3s ease;
-    box-shadow: 0 5px 15px rgba(229, 62, 62, 0.4);
-  }
-  .enter-button:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(229, 62, 62, 0.6);
-  }
+
+  .scary-text:nth-child(2) { animation-delay: 0.5s; }
+  .scary-text:nth-child(3) { animation-delay: 1s; }
+  .scary-text:nth-child(4) { animation-delay: 1.5s; }
+
   @keyframes fadeInUp {
     to {
       opacity: 1;
       transform: translateY(0);
     }
   }
-  .pulse {
-    animation: pulse 2s infinite;
-  }
-  @keyframes pulse {
-    0% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.05);
-    }
-    100% {
-      transform: scale(1);
-    }
-  }
-  .user-menu {
+
+  .enter-button {
+    margin-top: 2rem;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    background: linear-gradient(to right, #e53e3e, #ed8936);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 1s ease 2s forwards;
     transition: all 0.3s ease;
-    transform-origin: top right;
   }
-  .user-menu.hidden {
+
+  .enter-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(229, 62, 62, 0.3);
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    margin-bottom: 4px;
+    text-decoration: none;
+  }
+
+  .nav-item:hover {
+    background: rgba(79, 70, 229, 0.1);
+    color: var(--primary);
+  }
+
+  .nav-item.active {
+    background: rgba(79, 70, 229, 0.15);
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  .subject-checkbox:checked + label {
+    text-decoration: line-through;
+    color: var(--text-secondary);
+  }
+
+  .session-item {
+    border-left: 4px solid;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border-radius: 0 8px 8px 0;
+    background: var(--card-bg);
+    transition: all 0.2s ease;
+  }
+
+  .session-item:hover {
+    transform: translateX(4px);
+  }
+
+  .fade-in {
+    animation: fadeIn 0.5s ease forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  .mobile-optimized {
+    padding: 1rem;
+  }
+
+  .mobile-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .mobile-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .mobile-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .mobile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .mobile-form {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+  }
+
+  .mobile-tabs {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-tab {
+    flex: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    margin-right: 0.5rem;
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-tab.active {
+    background: var(--primary);
+    color: white;
+  }
+
+  .touch-friendly {
+    padding: 1rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  .mobile-header {
+    padding: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--card-bg);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .countdown-display {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ef4444;
+    margin: 1rem 0;
+  }
+
+  @media (min-width: 768px) {
+    .countdown-display {
+      font-size: 3rem;
+    }
+  }
+
+  .scare-text {
+    font-style: italic;
+    color: #6b7280;
+    margin-bottom: 1rem;
+  }
+
+  .subject-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .subject-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+
+  .completed {
+    text-decoration: line-through;
+    opacity: 0.7;
+  }
+
+  /* Enhanced Study Schedule Styles */
+  .schedule-day {
+    border-left: 4px solid;
+    transition: all 0.3s ease;
+  }
+
+  .schedule-day:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  }
+
+  .time-badge {
+    background: rgba(79, 70, 229, 0.1);
+    color: var(--primary);
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .schedule-session {
+    border-left: 3px solid;
+    padding: 8px 12px;
+    margin: 4px 0;
+    border-radius: 0 6px 6px 0;
+    background: rgba(0, 0, 0, 0.03);
+    transition: all 0.2s ease;
+  }
+
+  .schedule-session:hover {
+    transform: translateX(4px);
+  }
+
+  .schedule-actions {
     opacity: 0;
-    transform: scale(0.95);
-    pointer-events: none;
+    transition: opacity 0.3s ease;
   }
-  .app-container {
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 0.5s ease, transform 0.5s ease;
-  }
-  .app-container.visible {
+
+  .schedule-day:hover .schedule-actions {
     opacity: 1;
-    transform: translateY(0);
   }
+
+  /* Print Styles */
   @media print {
-    .no-print { 
-      display: none !important; 
+    body * {
+      visibility: hidden;
     }
-    body { 
-      background: white !important; 
-      color: black !important;
+    
+    #planSection,
+    #planSection * {
+      visibility: visible;
     }
-    .bg-white { 
-      background: white !important; 
-      border: 1px solid #000 !important; 
+    
+    #planSection {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      box-shadow: none;
+      border: none;
     }
-    .progress-bar {
-      -webkit-print-color-adjust: exact;
+    
+    .no-print {
+      display: none !important;
     }
-    .timetable-day {
-      break-inside: avoid;
+    
+    .card {
+      box-shadow: none;
+      border: 1px solid #ddd;
     }
+    
+    .btn-primary, .schedule-actions {
+      display: none !important;
+    }
+  }
+
+  /* Time Input Styles */
+  .time-inputs {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .time-input {
+    width: 80px;
+    text-align: center;
+  }
+
+  .time-separator {
+    font-weight: bold;
+    color: var(--text-secondary);
   }
 </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="smooth-transition">
 
 <!-- Login Screen -->
 <div id="loginScreen" class="login-container">
-  <div id="loginCard" class="login-card w-full max-w-md p-8 mx-4">
+  <div class="login-card">
     <div class="text-center mb-8">
       <h1 class="text-3xl font-bold text-indigo-700 mb-2"><i class="fas fa-book mr-2"></i>THE COUNTDOWN</h1>
       <p class="text-gray-600">Your Ultimate LDC 2025 Study Planner</p>
@@ -230,20 +517,21 @@
       
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-medium mb-2" for="loginEmail">Email</label>
-        <input id="loginEmail" type="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="your@email.com">
+        <input id="loginEmail" type="email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="your@email.com">
       </div>
       
       <div class="mb-6">
         <label class="block text-gray-700 text-sm font-medium mb-2" for="loginPassword">Password</label>
-        <input id="loginPassword" type="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
+        <input id="loginPassword" type="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
       </div>
       
-      <button id="loginBtn" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors mb-4">
-        Sign In
+      <button id="loginBtn" class="btn-primary w-full flex justify-center items-center touch-friendly">
+        <span id="loginText">Sign In</span>
+        <div id="loginSpinner" class="loading hidden ml-2"></div>
       </button>
       
-      <div class="text-center">
-        <button id="showRegister" class="text-indigo-600 hover:text-indigo-800 text-sm">
+      <div class="text-center mt-4">
+        <button id="showRegister" class="text-indigo-600 hover:text-indigo-800 text-sm touch-friendly">
           Don't have an account? Sign up
         </button>
       </div>
@@ -254,25 +542,26 @@
       
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-medium mb-2" for="registerName">Full Name</label>
-        <input id="registerName" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="John Doe">
+        <input id="registerName" type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="John Doe">
       </div>
       
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-medium mb-2" for="registerEmail">Email</label>
-        <input id="registerEmail" type="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="your@email.com">
+        <input id="registerEmail" type="email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="your@email.com">
       </div>
       
       <div class="mb-6">
         <label class="block text-gray-700 text-sm font-medium mb-2" for="registerPassword">Password</label>
-        <input id="registerPassword" type="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
+        <input id="registerPassword" type="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
       </div>
       
-      <button id="registerBtn" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors mb-4">
-        Create Account
+      <button id="registerBtn" class="btn-primary w-full flex justify-center items-center touch-friendly">
+        <span id="registerText">Create Account</span>
+        <div id="registerSpinner" class="loading hidden ml-2"></div>
       </button>
       
-      <div class="text-center">
-        <button id="showLogin" class="text-indigo-600 hover:text-indigo-800 text-sm">
+      <div class="text-center mt-4">
+        <button id="showLogin" class="text-indigo-600 hover:text-indigo-800 text-sm touch-friendly">
           Already have an account? Sign in
         </button>
       </div>
@@ -286,153 +575,376 @@
 
 <!-- Countdown Screen -->
 <div id="countdownScreen" class="countdown-container hidden">
-  <h1 class="countdown-title pulse">COUNTDOWN</h1>
+  <h1 class="countdown-title">COUNTDOWN</h1>
   <p class="scary-text">⏳ Time is slipping through your fingers...</p>
   <p class="scary-text">🔥 Every moment you waste brings failure closer</p>
   <p class="scary-text">😱 The exams are coming whether you're ready or not</p>
   <p class="scary-text">💀 Only the prepared will survive this challenge</p>
-  <button id="enterAppBtn" class="enter-button">
+  <button id="enterAppBtn" class="enter-button touch-friendly">
     ENTER IF YOU DARE <i class="fas fa-arrow-right ml-2"></i>
   </button>
 </div>
 
 <!-- Main Application -->
-<div id="appContainer" class="app-container hidden">
+<div id="appContainer" class="hidden">
 
-<!-- Header -->
-<header class="bg-gradient-to-r from-indigo-700 to-purple-700 text-white py-4 shadow-md">
-  <div class="max-w-6xl mx-auto px-6 flex justify-between items-center">
-    <div>
-      <h1 class="text-2xl font-extrabold"><i class="fas fa-book mr-2"></i>THE COUNTDOWN</h1>
-      <p class="text-xs opacity-90">Your Ultimate LDC 2025 Study Planner</p>
+  <!-- Sidebar Overlay -->
+  <div id="sidebarOverlay" class="overlay"></div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+      <h1 class="text-xl font-bold text-indigo-600"><i class="fas fa-book mr-2"></i>COUNTDOWN</h1>
+      <p class="text-sm text-gray-500 mt-1">LDC Study Planner</p>
     </div>
     
-    <!-- User Menu -->
-    <div class="relative">
-      <button id="userMenuBtn" class="flex items-center space-x-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors">
-        <i class="fas fa-user-circle"></i>
-        <span id="userName" class="font-medium">User</span>
-        <i class="fas fa-chevron-down text-xs"></i>
-      </button>
-      
-      <div id="userMenu" class="user-menu hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-10 border border-gray-200">
-        <div class="px-4 py-2 border-b border-gray-100">
-          <p class="text-sm font-medium text-gray-900" id="menuUserName">User Name</p>
-          <p class="text-xs text-gray-500 truncate" id="menuUserEmail">user@example.com</p>
+    <div class="p-4">
+      <div class="mb-8">
+        <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Navigation</h2>
+        <div class="space-y-1">
+          <a href="#" class="nav-item active" data-section="dashboard">
+            <i class="fas fa-tachometer-alt mr-3"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="#" class="nav-item" data-section="study-plan">
+            <i class="fas fa-calendar-alt mr-3"></i>
+            <span>Study Plan</span>
+          </a>
+          <a href="#" class="nav-item" data-section="subjects">
+            <i class="fas fa-book-open mr-3"></i>
+            <span>Subjects</span>
+          </a>
         </div>
-        <button id="switchUserBtn" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-          <i class="fas fa-exchange-alt mr-2"></i>Switch User
-        </button>
-        <button id="logoutBtn" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
-          <i class="fas fa-sign-out-alt mr-2"></i>Sign Out
-        </button>
+      </div>
+      
+      <div>
+        <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Account</h2>
+        <div class="space-y-1">
+          <a href="#" class="nav-item" id="logoutBtn">
+            <i class="fas fa-sign-out-alt mr-3"></i>
+            <span>Logout</span>
+          </a>
+        </div>
       </div>
     </div>
   </div>
-</header>
 
-<!-- Dark Mode Toggle -->
-<div class="text-right max-w-6xl mx-auto p-4 no-print">
-  <button id="toggleDark" class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors">
-    <i class="fas fa-moon mr-2"></i>Toggle Dark Mode
-  </button>
-</div>
-
-<main class="flex-1 max-w-6xl mx-auto p-6">
-
-  <!-- Countdown -->
-  <section class="mb-8 text-center bg-gradient-to-br from-white to-indigo-50 rounded-2xl shadow-md p-6 border border-indigo-100">
-    <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2"><i class="fas fa-clock mr-2"></i>Time Remaining</h2>
-    <div id="countdown" class="text-4xl font-bold text-red-600 mb-1"></div>
-    <p id="scareText" class="text-gray-600 italic"></p>
-  </section>
-
-  <!-- Overall Progress & Statistics -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-    <!-- Overall Progress -->
-    <section class="bg-white rounded-2xl shadow-md p-6">
-      <h2 class="text-xl font-semibold text-indigo-700 mb-4"><i class="fas fa-chart-line mr-2"></i>Overall Progress</h2>
-      <div class="progress-bar mb-2">
-        <div id="progressBar" class="progress-inner" style="width:0%;"></div>
-      </div>
-      <p id="progressText" class="text-sm text-gray-600 text-right">0% Completed</p>
-    </section>
-
-    <!-- Study Statistics -->
-    <section class="bg-white rounded-2xl shadow-md p-6">
-      <h2 class="text-xl font-semibold text-indigo-700 mb-4"><i class="fas fa-chart-pie mr-2"></i>Study Statistics</h2>
-      <div id="stats" class="grid grid-cols-2 gap-4 text-center">
-        <!-- Stats will be populated here -->
-      </div>
-    </section>
-  </div>
-
-  <!-- Study Plan Generator -->
-  <section class="bg-white p-6 rounded-2xl shadow-md mb-8">
-    <h2 class="text-xl font-semibold text-indigo-700 mb-4"><i class="fas fa-calendar-plus mr-2"></i>Study Plan Generator</h2>
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-      <label class="block">
-        <span class="text-sm text-gray-600">Select Date</span>
-        <input id="manualDate" type="date" class="mt-1 w-full border rounded-lg px-3 py-2"/>
-      </label>
-      <label class="block">
-        <span class="text-sm text-gray-600">Study Duration (hours)</span>
-        <input id="studyDuration" type="number" min="0.5" max="8" step="0.5" value="2" 
-               class="mt-1 w-full border rounded-lg px-3 py-2"/>
-      </label>
-      <label class="block">
-        <span class="text-sm text-gray-600">Select Subjects</span>
-        <select id="manualSubjects" multiple class="mt-1 w-full border rounded-lg px-3 py-2 h-32"></select>
-      </label>
-      <div class="flex items-end">
-        <button id="addToPlan" class="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 w-full transition-colors">
-          <i class="fas fa-plus mr-2"></i>Add to Plan
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header -->
+    <header class="mobile-header bg-white dark:bg-gray-800 shadow-sm flex justify-between items-center">
+      <div class="flex items-center">
+        <button id="sidebarToggle" class="sidebar-toggle mr-4 text-gray-600 dark:text-gray-300 touch-friendly">
+          <i class="fas fa-bars text-xl"></i>
         </button>
+        <h2 id="pageTitle" class="text-xl font-semibold text-gray-800 dark:text-white">Dashboard</h2>
       </div>
-    </div>
-    <div class="text-right no-print">
-      <button id="printBtn" class="px-5 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
-        <i class="fas fa-print mr-2"></i>Print / Save PDF
-      </button>
-      <button id="clearPlanBtn" class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors ml-2">
-        <i class="fas fa-trash mr-2"></i>Clear Plan
-      </button>
-    </div>
-  </section>
-
-  <!-- Units -->
-  <section id="unitsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10"></section>
-
-  <!-- Generated Plan -->
-  <section id="planSection" class="bg-white rounded-2xl shadow-md p-6 hidden">
-    <div class="flex justify-between items-center mb-6">
-      <h2 class="text-xl font-semibold text-indigo-700"><i class="fas fa-calendar-alt mr-2"></i>Your Study Schedule</h2>
+      
       <div class="flex items-center space-x-4">
-        <span id="planStats" class="text-sm text-gray-500"></span>
-        <button id="toggleView" class="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-sm hover:bg-indigo-200 transition-colors">
-          <i class="fas fa-th-large mr-1"></i>Toggle View
+        <button id="toggleDark" class="p-3 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 touch-friendly">
+          <i class="fas fa-moon"></i>
         </button>
+        
+        <div class="relative">
+          <button id="userMenuBtn" class="flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-lg touch-friendly">
+            <i class="fas fa-user-circle text-gray-600 dark:text-gray-300"></i>
+            <span id="userName" class="font-medium text-gray-700 dark:text-white">User</span>
+          </button>
+        </div>
       </div>
-    </div>
-    
-    <!-- Timetable View -->
-    <div id="timetableView" class="space-y-6">
-      <!-- Timetable will be populated here -->
-    </div>
-    
-    <!-- List View (Hidden by default) -->
-    <div id="listView" class="hidden space-y-4">
-      <!-- List view will be populated here -->
-    </div>
-  </section>
+    </header>
 
-</main>
+    <!-- Dashboard Section -->
+    <section id="dashboard" class="section active mobile-optimized">
+      <!-- Countdown Section -->
+      <div class="card p-6 mb-8 text-center">
+        <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
+          <i class="fas fa-clock mr-2"></i>Time Remaining
+        </h2>
+        <div id="countdown" class="countdown-display">53d 23h 39m 21s left</div>
+        <p id="scareText" class="scare-text">💼 Only the prepared will pass!</p>
+      </div>
 
-<footer class="text-center text-gray-500 text-sm py-4 border-t no-print">
-  &copy; 2025 THE COUNTDOWN | LDC Study Planner
-</footer>
+      <!-- Overall Progress & Statistics -->
+      <div class="mobile-grid mb-8">
+        <!-- Overall Progress -->
+        <div class="card p-6">
+          <h2 class="text-xl font-semibold text-indigo-700 mb-4">
+            <i class="fas fa-chart-line mr-2"></i>Overall Progress
+          </h2>
+          <div class="progress-bar mb-2">
+            <div id="progressBar" class="progress-inner" style="width:0%;"></div>
+          </div>
+          <p id="progressText" class="text-sm text-gray-600 text-right">0/25 Subjects (0%) Completed</p>
+        </div>
 
-</div> <!-- End of appContainer -->
+        <!-- Study Statistics -->
+        <div class="card p-6">
+          <h2 class="text-xl font-semibold text-indigo-700 mb-4">
+            <i class="fas fa-chart-pie mr-2"></i>Study Statistics
+          </h2>
+          <div id="stats" class="grid grid-cols-2 gap-4 text-center">
+            <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">0</div>
+              <div class="text-sm text-blue-800 dark:text-blue-300">Completed</div>
+            </div>
+            <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <div class="text-2xl font-bold text-green-600 dark:text-green-400">25</div>
+              <div class="text-sm text-green-800 dark:text-green-300">Remaining</div>
+            </div>
+            <div class="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+              <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">0</div>
+              <div class="text-sm text-purple-800 dark:text-purple-300">Sessions</div>
+            </div>
+            <div class="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+              <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">0%</div>
+              <div class="text-sm text-orange-800 dark:text-orange-300">Progress</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's Focus -->
+      <div class="card p-6 mb-8">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Today's Focus</h3>
+        <div class="text-center py-4 text-gray-500">
+          <i class="fas fa-calendar-plus text-4xl mb-3 opacity-50"></i>
+          <p>No study sessions scheduled for today</p>
+          <button class="btn-primary mt-4 touch-friendly" onclick="switchSection('study-plan')">
+            Plan Your Study
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Study Plan Section -->
+    <section id="study-plan" class="section hidden mobile-optimized">
+      <div class="card p-6 mb-8">
+        <h2 class="text-xl font-semibold text-indigo-700 mb-4">
+          <i class="fas fa-calendar-plus mr-2"></i>Study Plan Generator
+        </h2>
+        
+        <div class="mobile-form mb-6">
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2">Select Date</label>
+            <input id="manualDate" type="date" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700" value="2025-10-14">
+          </div>
+          
+          <div>
+            <label class="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2">Study Time</label>
+            <div class="time-inputs">
+              <input id="startTime" type="time" class="time-input px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700" value="09:00">
+              <span class="time-separator">to</span>
+              <input id="endTime" type="time" class="time-input px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700" value="11:00">
+            </div>
+          </div>
+        </div>
+        
+        <div class="mb-6">
+          <label class="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2">Select Subjects</label>
+          <select id="manualSubjects" multiple class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700 h-32">
+            <!-- Subjects will be populated here -->
+          </select>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+          <button id="addToPlan" class="btn-primary flex-1 touch-friendly">
+            <i class="fas fa-plus mr-2"></i>Add to Plan
+          </button>
+          <button id="clearPlanBtn" class="px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors touch-friendly">
+            <i class="fas fa-trash mr-2"></i>Clear Plan
+          </button>
+          <button id="printBtn" class="px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors touch-friendly no-print">
+            <i class="fas fa-print mr-2"></i>Print Schedule
+          </button>
+        </div>
+      </div>
+
+      <!-- Generated Plan -->
+      <div id="planSection" class="card p-6 mt-6">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-semibold text-indigo-700">
+            <i class="fas fa-calendar-alt mr-2"></i>Your Study Schedule
+          </h3>
+          <div class="flex items-center space-x-4">
+            <span id="planStats" class="text-sm text-gray-500">0 days, 0 sessions</span>
+          </div>
+        </div>
+        
+        <!-- Schedule View Options -->
+        <div class="flex mb-4 no-print">
+          <button id="viewDaily" class="mobile-tab active" data-view="daily">Daily View</button>
+          <button id="viewWeekly" class="mobile-tab" data-view="weekly">Weekly View</button>
+          <button id="viewMonthly" class="mobile-tab" data-view="monthly">Monthly View</button>
+        </div>
+        
+        <!-- Schedule Display -->
+        <div id="scheduleDisplay" class="space-y-4">
+          <div class="text-center py-8 text-gray-500">
+            <i class="fas fa-calendar-plus text-4xl mb-3 opacity-50"></i>
+            <p>No study sessions scheduled yet</p>
+            <p class="text-sm mt-2">Use the form above to create your study plan</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Subjects Section -->
+    <section id="subjects" class="section hidden mobile-optimized">
+      <div class="mb-6">
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">Your Subjects</h2>
+        <p class="text-gray-600 dark:text-gray-300">Track your progress across all LDC subjects</p>
+      </div>
+
+      <div class="mobile-grid">
+        <!-- Civil Proceedings -->
+        <div class="card p-5 subject-card">
+          <h3 class="font-bold text-white text-lg mb-3 p-2 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500">
+            Civil Proceedings
+          </h3>
+          <ul class="space-y-2">
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Pleadings</label>
+            </li>
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Interlocutory Applications</label>
+            </li>
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Trials</label>
+            </li>
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Judgment & Appeals</label>
+            </li>
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Execution of Decrees</label>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Criminal Proceedings -->
+        <div class="card p-5 subject-card">
+          <h3 class="font-bold text-white text-lg mb-3 p-2 rounded-lg bg-gradient-to-r from-red-500 to-pink-500">
+            Criminal Proceedings
+          </h3>
+          <ul class="space-y-2">
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Jurisdiction</label>
+            </li>
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Charge & Information</label>
+            </li>
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Bail & Remand</label>
+            </li>
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Trial Process</label>
+            </li>
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Sentencing & Appeals</label>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Family Law Practice -->
+        <div class="card p-5 subject-card">
+          <h3 class="font-bold text-white text-lg mb-3 p-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500">
+            Family Law Practice
+          </h3>
+          <ul class="space-y-2">
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Marriage & Divorce</label>
+            </li>
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Custody & Maintenance</label>
+            </li>
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Adoption & Guardianship</label>
+            </li>
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Matrimonial Property</label>
+            </li>
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Domestic Violence</label>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Corporate & Commercial Practice -->
+        <div class="card p-5 subject-card">
+          <h3 class="font-bold text-white text-lg mb-3 p-2 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-500">
+            Corporate & Commercial Practice
+          </h3>
+          <ul class="space-y-2">
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Company Formation</label>
+            </li>
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Contracts</label>
+            </li>
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Insolvency</label>
+            </li>
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Mergers & Acquisitions</label>
+            </li>
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Taxation</label>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Land Practice -->
+        <div class="card p-5 subject-card">
+          <h3 class="font-bold text-white text-lg mb-3 p-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500">
+            Land Practice
+          </h3>
+          <ul class="space-y-2">
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Land Registration</label>
+            </li>
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Conveyancing</label>
+            </li>
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Mortgages</label>
+            </li>
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Leases</label>
+            </li>
+            <li class="flex items-center space-x-2">
+              <input type="checkbox" class="subject-checkbox w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+              <label class="text-gray-700 dark:text-gray-300">Dispute Resolution</label>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
 
 <script>
 // Set dates dynamically
@@ -452,8 +964,6 @@ const scareSayings = [
   "💪 Consistency beats intensity!",
   "🧠 Knowledge is your best weapon!"
 ];
-
-const alertAudio = new Audio("https://www.soundjay.com/button/beep-07.mp3");
 
 const units = [
   { 
@@ -488,9 +998,9 @@ const units = [
   }
 ];
 
-let studyPlan = []; // store all manual plans
-let isTimetableView = true; // Track current view mode
-let currentUser = null; // Track current user
+let studyPlan = [];
+let currentUser = null;
+let currentView = 'daily';
 
 // User management functions
 function getUsers() {
@@ -526,61 +1036,13 @@ function init() {
     showLoginScreen();
   }
   
-  // Set up login/register event listeners
-  document.getElementById("loginBtn").addEventListener("click", handleLogin);
-  document.getElementById("registerBtn").addEventListener("click", handleRegister);
-  document.getElementById("showRegister").addEventListener("click", showRegisterForm);
-  document.getElementById("showLogin").addEventListener("click", showLoginForm);
-  document.getElementById("enterAppBtn").addEventListener("click", showAppScreen);
-  document.getElementById("userMenuBtn").addEventListener("click", toggleUserMenu);
-  document.getElementById("switchUserBtn").addEventListener("click", switchUser);
-  document.getElementById("logoutBtn").addEventListener("click", handleLogout);
-  
-  // Close user menu when clicking outside
-  document.addEventListener('click', (e) => {
-    const userMenu = document.getElementById('userMenu');
-    const userMenuBtn = document.getElementById('userMenuBtn');
-    if (userMenu && userMenuBtn && !userMenu.contains(e.target) && !userMenuBtn.contains(e.target)) {
-      userMenu.classList.add('hidden');
-    }
-  });
-  
-  // Allow Enter key to submit forms
-  document.getElementById('loginEmail').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      handleLogin();
-    }
-  });
-  
-  document.getElementById('loginPassword').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      handleLogin();
-    }
-  });
-  
-  document.getElementById('registerName').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      handleRegister();
-    }
-  });
-  
-  document.getElementById('registerEmail').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      handleRegister();
-    }
-  });
-  
-  document.getElementById('registerPassword').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      handleRegister();
-    }
-  });
+  // Set up event listeners
+  setupEventListeners();
 }
 
 // Show login screen
 function showLoginScreen() {
   document.getElementById('loginScreen').classList.remove('hidden');
-  document.getElementById('loginCard').classList.remove('hidden');
   document.getElementById('countdownScreen').classList.add('hidden');
   document.getElementById('appContainer').classList.add('hidden');
   
@@ -597,70 +1059,100 @@ function showLoginScreen() {
 
 // Show countdown screen
 function showCountdownScreen() {
-  // First hide the login screen
   document.getElementById('loginScreen').classList.add('hidden');
-  
-  // Then show the countdown screen
-  setTimeout(() => {
-    document.getElementById('countdownScreen').classList.remove('hidden');
-  }, 500);
+  document.getElementById('countdownScreen').classList.remove('hidden');
+  document.getElementById('appContainer').classList.add('hidden');
 }
 
-// Show app screen with smooth transition
+// Show app screen
 function showAppScreen() {
-  // First hide the countdown screen
+  document.getElementById('loginScreen').classList.add('hidden');
   document.getElementById('countdownScreen').classList.add('hidden');
+  document.getElementById('appContainer').classList.remove('hidden');
   
-  // Then show the app after animation completes
-  setTimeout(() => {
-    document.getElementById('appContainer').classList.remove('hidden');
-    document.getElementById('appContainer').classList.add('visible');
+  // Load user data
+  const userData = getCurrentUserData();
+  if (userData) {
+    document.getElementById('userName').textContent = userData.name;
     
-    // Load user data
-    const userData = getCurrentUserData();
-    if (userData) {
-      document.getElementById('userName').textContent = userData.name;
-      document.getElementById('menuUserName').textContent = userData.name;
-      document.getElementById('menuUserEmail').textContent = currentUser;
-      
-      // Load user's study plan and progress
-      studyPlan = userData.studyPlan || [];
-      
-      // Initialize app components
-      initializeApp();
-    }
-  }, 800);
+    // Load user's study plan and progress
+    studyPlan = userData.studyPlan || [];
+    
+    // Initialize app components
+    initializeApp();
+  }
 }
 
-// Initialize app components
-function initializeApp() {
-  // Set default date to today
-  document.getElementById("manualDate").valueAsDate = new Date();
+// Setup event listeners
+function setupEventListeners() {
+  // Login/Register
+  document.getElementById("loginBtn").addEventListener("click", handleLogin);
+  document.getElementById("registerBtn").addEventListener("click", handleRegister);
+  document.getElementById("showRegister").addEventListener("click", showRegisterForm);
+  document.getElementById("showLogin").addEventListener("click", showLoginForm);
+  document.getElementById("enterAppBtn").addEventListener("click", showAppScreen);
+  document.getElementById("logoutBtn").addEventListener("click", handleLogout);
   
-  populateSubjects();
-  renderUnits();
-  updateProgress();
-  updateCountdown();
-  renderStudyPlan();
-  updateStatistics();
+  // Sidebar
+  document.getElementById("sidebarToggle").addEventListener("click", toggleSidebar);
+  document.getElementById("sidebarOverlay").addEventListener("click", toggleSidebar);
   
-  // Set up event listeners
-  document.getElementById("addToPlan").addEventListener("click", addToPlan);
-  document.getElementById("printBtn").addEventListener("click", () => window.print());
-  document.getElementById("clearPlanBtn").addEventListener("click", clearStudyPlan);
+  // Navigation
+  document.querySelectorAll('.nav-item').forEach(item => {
+    if (item.id !== 'logoutBtn') {
+      item.addEventListener('click', function(e) {
+        e.preventDefault();
+        switchSection(this.getAttribute('data-section'));
+      });
+    }
+  });
+  
+  // Dark mode
   document.getElementById("toggleDark").addEventListener("click", toggleDarkMode);
-  document.getElementById("toggleView").addEventListener("click", toggleView);
   
-  // Set up countdown interval
-  setInterval(updateCountdown, 1000);
+  // Study plan
+  document.getElementById("addToPlan").addEventListener("click", addToPlan);
+  document.getElementById("clearPlanBtn").addEventListener("click", clearStudyPlan);
+  document.getElementById("printBtn").addEventListener("click", printSchedule);
+  
+  // View options
+  document.getElementById("viewDaily").addEventListener("click", () => switchView('daily'));
+  document.getElementById("viewWeekly").addEventListener("click", () => switchView('weekly'));
+  document.getElementById("viewMonthly").addEventListener("click", () => switchView('monthly'));
+  
+  // Subject checkboxes
+  document.querySelectorAll('.subject-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      updateProgress();
+    });
+  });
+  
+  // Allow Enter key to submit forms
+  document.getElementById('loginEmail').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') handleLogin();
+  });
+  
+  document.getElementById('loginPassword').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') handleLogin();
+  });
+  
+  document.getElementById('registerName').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') handleRegister();
+  });
+  
+  document.getElementById('registerEmail').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') handleRegister();
+  });
+  
+  document.getElementById('registerPassword').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') handleRegister();
+  });
 }
 
 // Show login form
 function showLoginForm() {
   document.getElementById('loginForm').classList.remove('hidden');
   document.getElementById('registerForm').classList.add('hidden');
-  
-  // Clear any existing errors
   removeAuthErrors();
 }
 
@@ -668,8 +1160,6 @@ function showLoginForm() {
 function showRegisterForm() {
   document.getElementById('loginForm').classList.add('hidden');
   document.getElementById('registerForm').classList.remove('hidden');
-  
-  // Clear any existing errors
   removeAuthErrors();
 }
 
@@ -683,16 +1173,27 @@ function handleLogin() {
     return;
   }
   
-  const users = getUsers();
+  // Show loading state
+  document.getElementById('loginText').classList.add('hidden');
+  document.getElementById('loginSpinner').classList.remove('hidden');
   
-  if (users[email] && users[email].password === password) {
-    // Successful login
-    currentUser = email;
-    localStorage.setItem('currentUser', email);
-    showCountdownScreen();
-  } else {
-    showAuthError('Invalid email or password', 'loginForm');
-  }
+  // Simulate API call
+  setTimeout(() => {
+    const users = getUsers();
+    
+    if (users[email] && users[email].password === password) {
+      // Successful login
+      currentUser = email;
+      localStorage.setItem('currentUser', email);
+      showCountdownScreen();
+    } else {
+      showAuthError('Invalid email or password', 'loginForm');
+    }
+    
+    // Hide loading state
+    document.getElementById('loginText').classList.remove('hidden');
+    document.getElementById('loginSpinner').classList.add('hidden');
+  }, 1000);
 }
 
 // Handle user registration
@@ -711,68 +1212,122 @@ function handleRegister() {
     return;
   }
   
-  const users = getUsers();
+  // Show loading state
+  document.getElementById('registerText').classList.add('hidden');
+  document.getElementById('registerSpinner').classList.remove('hidden');
   
-  if (users[email]) {
-    showAuthError('An account with this email already exists', 'registerForm');
-    return;
-  }
-  
-  // Create new user
-  users[email] = {
-    name: name,
-    password: password,
-    studyPlan: [],
-    progress: {},
-    createdAt: new Date().toISOString()
-  };
-  
-  saveUsers(users);
-  
-  // Auto-login after registration
-  currentUser = email;
-  localStorage.setItem('currentUser', email);
-  showCountdownScreen();
+  // Simulate API call
+  setTimeout(() => {
+    const users = getUsers();
+    
+    if (users[email]) {
+      showAuthError('An account with this email already exists', 'registerForm');
+    } else {
+      // Create new user
+      users[email] = {
+        name: name,
+        password: password,
+        studyPlan: [],
+        progress: {},
+        createdAt: new Date().toISOString()
+      };
+      
+      saveUsers(users);
+      
+      // Auto-login after registration
+      currentUser = email;
+      localStorage.setItem('currentUser', email);
+      showCountdownScreen();
+    }
+    
+    // Hide loading state
+    document.getElementById('registerText').classList.remove('hidden');
+    document.getElementById('registerSpinner').classList.add('hidden');
+  }, 1000);
 }
 
 // Handle user logout
 function handleLogout() {
   currentUser = null;
   localStorage.removeItem('currentUser');
-  document.getElementById('userMenu').classList.add('hidden');
+  showLoginScreen();
+}
+
+// Toggle sidebar
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+
+// Switch section
+function switchSection(sectionId) {
+  // Update active nav item
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
   
-  // Show login screen with animation
-  document.getElementById('appContainer').classList.remove('visible');
-  setTimeout(() => {
-    showLoginScreen();
-  }, 500);
+  // Update page title
+  const titles = {
+    'dashboard': 'Dashboard',
+    'study-plan': 'Study Plan',
+    'subjects': 'Subjects'
+  };
+  document.getElementById('pageTitle').textContent = titles[sectionId] || 'Dashboard';
+  
+  // Show section
+  document.querySelectorAll('.section').forEach(section => {
+    section.classList.add('hidden');
+    section.classList.remove('active');
+  });
+  document.getElementById(sectionId).classList.remove('hidden');
+  document.getElementById(sectionId).classList.add('active');
+  
+  // Close sidebar on mobile
+  if (window.innerWidth < 1024) {
+    toggleSidebar();
+  }
 }
 
-// Switch user (go back to login screen)
-function switchUser() {
-  handleLogout();
+// Switch view
+function switchView(view) {
+  currentView = view;
+  
+  // Update active view button
+  document.querySelectorAll('.mobile-tab').forEach(tab => {
+    tab.classList.remove('active');
+  });
+  document.querySelector(`[data-view="${view}"]`).classList.add('active');
+  
+  // Render schedule with new view
+  renderStudyPlan();
 }
 
-// Toggle user menu
-function toggleUserMenu() {
-  document.getElementById('userMenu').classList.toggle('hidden');
+// Toggle dark mode
+function toggleDarkMode() {
+  document.body.classList.toggle('dark-mode');
+  const button = document.getElementById('toggleDark');
+  
+  if (document.body.classList.contains('dark-mode')) {
+    button.innerHTML = '<i class="fas fa-sun"></i>';
+    localStorage.setItem('darkMode', 'enabled');
+  } else {
+    button.innerHTML = '<i class="fas fa-moon"></i>';
+    localStorage.setItem('darkMode', 'disabled');
+  }
 }
 
 // Show authentication error
 function showAuthError(message, formId) {
-  // Remove existing error if any
   removeAuthErrors();
   
-  // Create error element
   const errorEl = document.createElement('div');
   errorEl.className = 'auth-error bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4';
   errorEl.textContent = message;
   
-  // Insert error
   const currentForm = document.getElementById(formId);
   currentForm.insertBefore(errorEl, currentForm.firstChild);
   
-  // Auto-remove after 5 seconds
   setTimeout(() => {
     if (errorEl.parentNode) {
       errorEl.remove();
@@ -806,191 +1361,35 @@ function populateSubjects() {
   });
 }
 
-// Countdown
-function updateCountdown() {
-  const now = new Date();
-  const countdownEl = document.getElementById("countdown");
-  const scareTextEl = document.getElementById("scareText");
-  
-  if (now < startTime) {
-    countdownEl.textContent = "⏳ Countdown starts at 18:18 today!";
-    scareTextEl.textContent = "Get ready, Counsel!";
-    return;
-  }
-  
-  const diff = deadline - now;
-  if (diff <= 0) {
-    countdownEl.textContent = "🚨 EXAMS HAVE BEGUN!";
-    scareTextEl.textContent = "All the best, Counsel!";
-    return;
-  }
-  
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-  const minutes = Math.floor((diff / (1000 * 60)) % 60);
-  const seconds = Math.floor((diff / 1000) % 60);
-  
-  countdownEl.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s left`;
-  scareTextEl.textContent = scareSayings[Math.floor(Math.random() * scareSayings.length)];
-  
-  if (days < 10) {
-    alertAudio.play().catch(e => console.log("Audio play failed:", e));
-  }
-}
-
-// Render Units with checkboxes
-function renderUnits() {
-  const container = document.getElementById("unitsContainer");
-  container.innerHTML = "";
-  
-  const userData = getCurrentUserData();
-  const userProgress = userData?.progress || {};
-  
-  units.forEach((unit, uIndex) => {
-    const card = document.createElement("div");
-    card.className = `bg-white border border-gray-200 rounded-2xl shadow-sm p-5 subject-card`;
-    
-    const title = document.createElement("h3");
-    title.className = `font-bold text-white text-lg mb-3 p-2 rounded-lg bg-gradient-to-r ${unit.color}`;
-    title.textContent = unit.title;
-    card.appendChild(title);
-    
-    const list = document.createElement("ul");
-    list.className = "space-y-2";
-    
-    unit.subjects.forEach((subject, sIndex) => {
-      const li = document.createElement("li");
-      li.className = "flex items-center space-x-2";
-      
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.className = "w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500";
-      
-      const label = document.createElement("label");
-      label.textContent = subject;
-      label.className = "text-gray-700 flex-1";
-      
-      const key = `unit${uIndex}_subject${sIndex}`;
-      checkbox.checked = userProgress[key] === true;
-      
-      if (checkbox.checked) {
-        label.classList.add("completed");
-      }
-      
-      checkbox.addEventListener("change", () => {
-        // Save progress to user data
-        const userData = getCurrentUserData();
-        if (!userData.progress) userData.progress = {};
-        userData.progress[key] = checkbox.checked;
-        saveCurrentUserData(userData);
-        
-        if (checkbox.checked) {
-          label.classList.add("completed");
-          showCompletionAlert(subject, unit.title);
-        } else {
-          label.classList.remove("completed");
-        }
-        
-        updateProgress();
-        updateStatistics();
-        renderStudyPlan();
-      });
-      
-      li.appendChild(checkbox);
-      li.appendChild(label);
-      list.appendChild(li);
-    });
-    
-    card.appendChild(list);
-    container.appendChild(card);
-  });
-}
-
-// Show completion alert
-function showCompletionAlert(subject, unitTitle) {
-  // Create a custom alert instead of using the default one
-  const alertDiv = document.createElement("div");
-  alertDiv.className = "fixed top-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm";
-  alertDiv.innerHTML = `
-    <div class="flex items-center">
-      <i class="fas fa-check-circle mr-2 text-xl"></i>
-      <div>
-        <p class="font-semibold">Subject Completed!</p>
-        <p class="text-sm">${subject} (${unitTitle})</p>
-      </div>
-    </div>
-  `;
-  
-  document.body.appendChild(alertDiv);
-  
-  // Remove after 3 seconds
-  setTimeout(() => {
-    alertDiv.remove();
-  }, 3000);
-}
-
-// Overall progress
-function updateProgress() {
-  const total = units.reduce((sum, u) => sum + u.subjects.length, 0);
-  const userData = getCurrentUserData();
-  const userProgress = userData?.progress || {};
-  
-  const done = units.flatMap((u, i) => 
-    u.subjects.map((_, j) => userProgress[`unit${i}_subject${j}`] === true)
-  ).filter(x => x).length;
-  
-  const percent = Math.round((done / total) * 100);
-  document.getElementById("progressBar").style.width = percent + "%";
-  document.getElementById("progressText").textContent = `${done}/${total} Subjects (${percent}%) Completed`;
-}
-
-// Update statistics
-function updateStatistics() {
-  const total = units.reduce((sum, u) => sum + u.subjects.length, 0);
-  const userData = getCurrentUserData();
-  const userProgress = userData?.progress || {};
-  
-  const done = units.flatMap((u, i) => 
-    u.subjects.map((_, j) => userProgress[`unit${i}_subject${j}`] === true)
-  ).filter(x => x).length;
-  
-  const remaining = total - done;
-  const totalSessions = studyPlan.reduce((sum, day) => sum + day.sessions.length, 0);
-  
-  const statsHTML = `
-    <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-      <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">${done}</div>
-      <div class="text-sm text-blue-800 dark:text-blue-300">Completed</div>
-    </div>
-    <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-      <div class="text-2xl font-bold text-green-600 dark:text-green-400">${remaining}</div>
-      <div class="text-sm text-green-800 dark:text-green-300">Remaining</div>
-    </div>
-    <div class="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-      <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">${totalSessions}</div>
-      <div class="text-sm text-purple-800 dark:text-purple-300">Sessions</div>
-    </div>
-    <div class="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-      <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">${Math.round((done/total)*100)}%</div>
-      <div class="text-sm text-orange-800 dark:text-orange-300">Progress</div>
-    </div>
-  `;
-  
-  document.getElementById('stats').innerHTML = statsHTML;
-}
-
 // Add manual plan
 function addToPlan() {
   const date = document.getElementById("manualDate").value;
-  const duration = document.getElementById("studyDuration").value;
+  const startTime = document.getElementById("startTime").value;
+  const endTime = document.getElementById("endTime").value;
   const selected = Array.from(document.getElementById("manualSubjects").selectedOptions).map(o => o.value);
   
-  if (!date || selected.length === 0) {
-    showErrorAlert("Please select a date and at least one subject!");
+  if (!date || !startTime || !endTime || selected.length === 0) {
+    showErrorAlert("Please select a date, time, and at least one subject!");
     return;
   }
   
-  studyPlan.push({ date, duration, sessions: selected });
+  // Calculate duration in minutes
+  const start = new Date(`2000-01-01T${startTime}`);
+  const end = new Date(`2000-01-01T${endTime}`);
+  const durationMinutes = (end - start) / (1000 * 60);
+  
+  if (durationMinutes <= 0) {
+    showErrorAlert("End time must be after start time!");
+    return;
+  }
+  
+  studyPlan.push({ 
+    date, 
+    startTime, 
+    endTime,
+    duration: durationMinutes,
+    sessions: selected 
+  });
   
   // Save to user data
   const userData = getCurrentUserData();
@@ -1046,60 +1445,317 @@ function clearStudyPlan() {
   }
 }
 
-// Toggle between timetable and list view
-function toggleView() {
-  const timetable = document.getElementById("timetableView");
-  const list = document.getElementById("listView");
-  const toggleBtn = document.getElementById("toggleView");
-  
-  isTimetableView = !isTimetableView;
-  
-  if (isTimetableView) {
-    timetable.classList.remove("hidden");
-    list.classList.add("hidden");
-    toggleBtn.innerHTML = '<i class="fas fa-th-large mr-1"></i>Toggle View';
-  } else {
-    timetable.classList.add("hidden");
-    list.classList.remove("hidden");
-    toggleBtn.innerHTML = '<i class="fas fa-list mr-1"></i>Toggle View';
-  }
-  
-  renderStudyPlan();
+// Print schedule
+function printSchedule() {
+  window.print();
 }
 
-// Render study plan in both views
-function renderStudyPlan() {
-  const timetable = document.getElementById("timetableView");
-  const list = document.getElementById("listView");
-  const planSection = document.getElementById("planSection");
-  const planStats = document.getElementById("planStats");
+// Update progress
+function updateProgress() {
+  const totalSubjects = 25; // 5 units × 5 subjects each
+  const completedSubjects = document.querySelectorAll('.subject-checkbox:checked').length;
+  const percent = Math.round((completedSubjects / totalSubjects) * 100);
   
-  timetable.innerHTML = "";
-  list.innerHTML = "";
+  document.getElementById("progressBar").style.width = percent + "%";
+  document.getElementById("progressText").textContent = `${completedSubjects}/${totalSubjects} Subjects (${percent}%) Completed`;
   
-  if (studyPlan.length === 0) {
-    planSection.classList.add("hidden");
+  // Update statistics
+  document.getElementById('stats').innerHTML = `
+    <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+      <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">${completedSubjects}</div>
+      <div class="text-sm text-blue-800 dark:text-blue-300">Completed</div>
+    </div>
+    <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+      <div class="text-2xl font-bold text-green-600 dark:text-green-400">${totalSubjects - completedSubjects}</div>
+      <div class="text-sm text-green-800 dark:text-green-300">Remaining</div>
+    </div>
+    <div class="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+      <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">${studyPlan.reduce((sum, day) => sum + day.sessions.length, 0)}</div>
+      <div class="text-sm text-purple-800 dark:text-purple-300">Sessions</div>
+    </div>
+    <div class="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+      <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">${percent}%</div>
+      <div class="text-sm text-orange-800 dark:text-orange-300">Progress</div>
+    </div>
+  `;
+}
+
+// Update statistics
+function updateStatistics() {
+  updateProgress(); // Progress update will also update statistics
+}
+
+// Update countdown
+function updateCountdown() {
+  const now = new Date();
+  const diff = deadline - now;
+  
+  if (diff <= 0) {
+    document.getElementById('countdown').textContent = 'EXAMS HAVE BEGUN!';
     return;
   }
   
-  planSection.classList.remove("hidden");
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((diff / (1000 * 60)) % 60);
+  const seconds = Math.floor((diff / 1000) % 60);
+  
+  document.getElementById('countdown').textContent = `${days}d ${hours}h ${minutes}m ${seconds}s left`;
+  
+  // Update scare text randomly
+  if (Math.random() < 0.01) { // 1% chance to change on each update
+    document.getElementById('scareText').textContent = scareSayings[Math.floor(Math.random() * scareSayings.length)];
+  }
+}
+
+// Render study plan
+function renderStudyPlan() {
+  const scheduleDisplay = document.getElementById("scheduleDisplay");
+  const planStats = document.getElementById("planStats");
+  
+  scheduleDisplay.innerHTML = "";
+  
+  if (studyPlan.length === 0) {
+    scheduleDisplay.innerHTML = `
+      <div class="text-center py-8 text-gray-500">
+        <i class="fas fa-calendar-plus text-4xl mb-3 opacity-50"></i>
+        <p>No study sessions scheduled yet</p>
+        <p class="text-sm mt-2">Use the form above to create your study plan</p>
+      </div>
+    `;
+    planStats.textContent = "0 days, 0 sessions";
+    return;
+  }
   
   // Sort study plan by date
   studyPlan.sort((a, b) => new Date(a.date) - new Date(b.date));
   
   // Calculate plan stats
   const totalSessions = studyPlan.reduce((sum, day) => sum + day.sessions.length, 0);
-  const totalHours = studyPlan.reduce((sum, day) => sum + (day.sessions.length * parseFloat(day.duration || 2)), 0);
-  planStats.textContent = `${studyPlan.length} days, ${totalSessions} sessions, ${totalHours} hours`;
+  const totalHours = studyPlan.reduce((sum, day) => sum + (day.duration / 60), 0);
+  planStats.textContent = `${studyPlan.length} days, ${totalSessions} sessions, ${Math.round(totalHours)} hours`;
   
-  // Group study plan by week
+  // Render based on current view
+  if (currentView === 'daily') {
+    renderDailyView(scheduleDisplay);
+  } else if (currentView === 'weekly') {
+    renderWeeklyView(scheduleDisplay);
+  } else if (currentView === 'monthly') {
+    renderMonthlyView(scheduleDisplay);
+  }
+}
+
+// Render daily view
+function renderDailyView(container) {
+  studyPlan.forEach((day, index) => {
+    const dayElement = document.createElement("div");
+    dayElement.className = "schedule-day card p-4 border-l-4 border-indigo-500";
+    
+    // Day header
+    const dayHeader = document.createElement("div");
+    dayHeader.className = "flex justify-between items-center mb-3";
+    
+    const dateElement = document.createElement("div");
+    dateElement.className = "font-semibold text-indigo-700";
+    dateElement.innerHTML = `<i class="far fa-calendar mr-2"></i>${formatDate(day.date)}`;
+    
+    const timeElement = document.createElement("div");
+    timeElement.className = "time-badge";
+    timeElement.innerHTML = `<i class="far fa-clock mr-1"></i>${day.startTime} - ${day.endTime} (${Math.round(day.duration / 60)}h ${day.duration % 60}m)`;
+    
+    const actionsElement = document.createElement("div");
+    actionsElement.className = "schedule-actions flex space-x-2";
+    
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "text-red-400 hover:text-red-600 transition-colors touch-friendly";
+    deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
+    deleteBtn.onclick = () => {
+      studyPlan.splice(index, 1);
+      
+      // Save to user data
+      const userData = getCurrentUserData();
+      userData.studyPlan = studyPlan;
+      saveCurrentUserData(userData);
+      
+      renderStudyPlan();
+      updateStatistics();
+    };
+    
+    actionsElement.appendChild(deleteBtn);
+    
+    dayHeader.appendChild(dateElement);
+    dayHeader.appendChild(timeElement);
+    dayHeader.appendChild(actionsElement);
+    
+    // Sessions list
+    const sessionsList = document.createElement("div");
+    sessionsList.className = "space-y-2";
+    
+    day.sessions.forEach(session => {
+      const sessionElement = document.createElement("div");
+      sessionElement.className = "schedule-session border-l-indigo-300";
+      
+      const sessionContent = document.createElement("div");
+      sessionContent.className = "flex justify-between items-center";
+      
+      const sessionTitle = document.createElement("div");
+      sessionTitle.className = `font-medium text-gray-700`;
+      sessionTitle.textContent = session;
+      
+      // Find which unit this session belongs to
+      const unit = units.find(u => u.subjects.includes(session));
+      const isCompleted = unit && document.querySelector(`input[type="checkbox"]:checked`) !== null;
+      
+      const sessionStatus = document.createElement("div");
+      sessionStatus.className = "text-xs";
+      
+      if (isCompleted) {
+        sessionStatus.innerHTML = '<i class="fas fa-check-circle text-green-500"></i>';
+      } else {
+        sessionStatus.innerHTML = '<i class="far fa-circle text-gray-400"></i>';
+      }
+      
+      sessionContent.appendChild(sessionTitle);
+      sessionContent.appendChild(sessionStatus);
+      sessionElement.appendChild(sessionContent);
+      
+      sessionsList.appendChild(sessionElement);
+    });
+    
+    dayElement.appendChild(dayHeader);
+    dayElement.appendChild(sessionsList);
+    container.appendChild(dayElement);
+  });
+}
+
+// Render weekly view
+function renderWeeklyView(container) {
   const weeks = groupStudyPlanByWeek(studyPlan);
   
-  // Render timetable view
-  renderTimetableView(weeks, timetable);
+  weeks.forEach((week, weekIndex) => {
+    const weekElement = document.createElement("div");
+    weekElement.className = "mb-6";
+    
+    // Week header
+    const weekHeader = document.createElement("div");
+    weekHeader.className = "flex justify-between items-center mb-4 p-3 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-lg";
+    
+    const weekTitle = document.createElement("h3");
+    weekTitle.className = "font-bold text-indigo-700 text-lg";
+    weekTitle.textContent = `Week ${weekIndex + 1} (${formatDate(week[0].date)} - ${formatDate(week[week.length-1].date)})`;
+    
+    const weekStats = document.createElement("div");
+    weekStats.className = "text-sm text-indigo-600";
+    const weekSessions = week.reduce((sum, day) => sum + day.sessions.length, 0);
+    const weekHours = week.reduce((sum, day) => sum + (day.duration / 60), 0);
+    weekStats.textContent = `${weekSessions} sessions, ${Math.round(weekHours)} hours`;
+    
+    weekHeader.appendChild(weekTitle);
+    weekHeader.appendChild(weekStats);
+    weekElement.appendChild(weekHeader);
+    
+    // Days grid
+    const daysGrid = document.createElement("div");
+    daysGrid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4";
+    
+    week.forEach(day => {
+      const dayElement = document.createElement("div");
+      dayElement.className = "schedule-day card p-4 border-l-4 border-purple-500";
+      
+      // Day header
+      const dayHeader = document.createElement("div");
+      dayHeader.className = "flex justify-between items-center mb-2";
+      
+      const dateElement = document.createElement("div");
+      dateElement.className = "font-semibold text-purple-700";
+      dateElement.innerHTML = `<i class="far fa-calendar mr-2"></i>${formatDate(day.date, true)}`;
+      
+      const timeElement = document.createElement("div");
+      timeElement.className = "time-badge bg-purple-100 text-purple-700";
+      timeElement.innerHTML = `<i class="far fa-clock mr-1"></i>${day.startTime} - ${day.endTime}`;
+      
+      dayHeader.appendChild(dateElement);
+      dayHeader.appendChild(timeElement);
+      
+      // Sessions list
+      const sessionsList = document.createElement("div");
+      sessionsList.className = "space-y-1 mt-2";
+      
+      day.sessions.forEach(session => {
+        const sessionElement = document.createElement("div");
+        sessionElement.className = "schedule-session border-l-purple-300 text-sm";
+        sessionElement.textContent = session;
+        sessionsList.appendChild(sessionElement);
+      });
+      
+      dayElement.appendChild(dayHeader);
+      dayElement.appendChild(sessionsList);
+      daysGrid.appendChild(dayElement);
+    });
+    
+    weekElement.appendChild(daysGrid);
+    container.appendChild(weekElement);
+  });
+}
+
+// Render monthly view
+function renderMonthlyView(container) {
+  const months = groupStudyPlanByMonth(studyPlan);
   
-  // Render list view
-  renderListView(studyPlan, list);
+  months.forEach((month, monthIndex) => {
+    const monthElement = document.createElement("div");
+    monthElement.className = "mb-6";
+    
+    // Month header
+    const monthHeader = document.createElement("div");
+    monthHeader.className = "flex justify-between items-center mb-4 p-3 bg-gradient-to-r from-green-100 to-emerald-100 rounded-lg";
+    
+    const monthTitle = document.createElement("h3");
+    monthTitle.className = "font-bold text-green-700 text-lg";
+    monthTitle.textContent = `${formatMonth(month[0].date)}`;
+    
+    const monthStats = document.createElement("div");
+    monthStats.className = "text-sm text-green-600";
+    const monthSessions = month.reduce((sum, day) => sum + day.sessions.length, 0);
+    const monthHours = month.reduce((sum, day) => sum + (day.duration / 60), 0);
+    monthStats.textContent = `${monthSessions} sessions, ${Math.round(monthHours)} hours`;
+    
+    monthHeader.appendChild(monthTitle);
+    monthHeader.appendChild(monthStats);
+    monthElement.appendChild(monthHeader);
+    
+    // Days grid
+    const daysGrid = document.createElement("div");
+    daysGrid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4";
+    
+    month.forEach(day => {
+      const dayElement = document.createElement("div");
+      dayElement.className = "schedule-day card p-3 border-l-4 border-green-500";
+      
+      // Day header
+      const dateElement = document.createElement("div");
+      dateElement.className = "font-semibold text-green-700 text-sm";
+      dateElement.innerHTML = `<i class="far fa-calendar mr-1"></i>${formatDate(day.date, true)}`;
+      
+      // Time
+      const timeElement = document.createElement("div");
+      timeElement.className = "text-xs text-green-600 mt-1";
+      timeElement.textContent = `${day.startTime} - ${day.endTime}`;
+      
+      // Sessions count
+      const sessionsElement = document.createElement("div");
+      sessionsElement.className = "text-xs text-gray-500 mt-1";
+      sessionsElement.textContent = `${day.sessions.length} topics`;
+      
+      dayElement.appendChild(dateElement);
+      dayElement.appendChild(timeElement);
+      dayElement.appendChild(sessionsElement);
+      daysGrid.appendChild(dayElement);
+    });
+    
+    monthElement.appendChild(daysGrid);
+    container.appendChild(monthElement);
+  });
 }
 
 // Group study plan by week
@@ -1130,220 +1786,73 @@ function groupStudyPlanByWeek(studyPlan) {
   return weeks;
 }
 
+// Group study plan by month
+function groupStudyPlanByMonth(studyPlan) {
+  const months = [];
+  let currentMonth = [];
+  let currentMonthStart = null;
+  
+  studyPlan.forEach(day => {
+    const date = new Date(day.date);
+    const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+    
+    if (!currentMonthStart || monthStart.getTime() !== currentMonthStart.getTime()) {
+      if (currentMonth.length > 0) {
+        months.push(currentMonth);
+      }
+      currentMonth = [day];
+      currentMonthStart = monthStart;
+    } else {
+      currentMonth.push(day);
+    }
+  });
+  
+  if (currentMonth.length > 0) {
+    months.push(currentMonth);
+  }
+  
+  return months;
+}
+
 // Get the start of the week (Monday)
 function getWeekStart(date) {
   const day = date.getDay();
-  const diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is Sunday
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1);
   return new Date(date.setDate(diff));
 }
 
-// Render timetable view
-function renderTimetableView(weeks, container) {
-  weeks.forEach((week, weekIndex) => {
-    const weekElement = document.createElement("div");
-    weekElement.className = "mb-8";
-    
-    // Week header
-    const weekHeader = document.createElement("div");
-    weekHeader.className = "flex justify-between items-center mb-4 p-3 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-lg";
-    
-    const weekTitle = document.createElement("h3");
-    weekTitle.className = "font-bold text-indigo-700 text-lg";
-    weekTitle.textContent = `Week ${weekIndex + 1} (${formatDate(week[0].date)} - ${formatDate(week[week.length-1].date)})`;
-    
-    const weekStats = document.createElement("div");
-    weekStats.className = "text-sm text-indigo-600";
-    const weekSessions = week.reduce((sum, day) => sum + day.sessions.length, 0);
-    weekStats.textContent = `${weekSessions} sessions`;
-    
-    weekHeader.appendChild(weekTitle);
-    weekHeader.appendChild(weekStats);
-    weekElement.appendChild(weekHeader);
-    
-    // Days grid
-    const daysGrid = document.createElement("div");
-    daysGrid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4";
-    
-    week.forEach(day => {
-      const dayElement = document.createElement("div");
-      dayElement.className = "timetable-day bg-white border border-gray-200 rounded-xl p-4 shadow-sm";
-      
-      // Day header
-      const dayHeader = document.createElement("div");
-      dayHeader.className = "flex justify-between items-center mb-3 pb-2 border-b border-gray-100";
-      
-      const dateElement = document.createElement("div");
-      dateElement.className = "font-semibold text-indigo-700";
-      dateElement.innerHTML = `<i class="far fa-calendar mr-2"></i>${formatDate(day.date)}`;
-      
-      const dayStats = document.createElement("div");
-      dayStats.className = "flex items-center space-x-2";
-      
-      const durationElement = document.createElement("span");
-      durationElement.className = "text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full";
-      durationElement.innerHTML = `<i class="far fa-clock mr-1"></i>${day.duration || 2}h/session`;
-      
-      const progressElement = document.createElement("span");
-      const progress = calculateDayProgress(day);
-      progressElement.className = `text-xs px-2 py-1 rounded-full ${progress === 100 ? 'bg-green-100 text-green-700' : progress >= 50 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`;
-      progressElement.textContent = `${progress}%`;
-      
-      const deleteBtn = document.createElement("button");
-      deleteBtn.className = "text-red-400 hover:text-red-600 transition-colors";
-      deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
-      deleteBtn.onclick = () => {
-        const index = studyPlan.findIndex(d => d.date === day.date);
-        if (index !== -1) {
-          studyPlan.splice(index, 1);
-          
-          // Save to user data
-          const userData = getCurrentUserData();
-          userData.studyPlan = studyPlan;
-          saveCurrentUserData(userData);
-          
-          renderStudyPlan();
-          updateStatistics();
-        }
-      };
-      
-      dayStats.appendChild(durationElement);
-      dayStats.appendChild(progressElement);
-      dayStats.appendChild(deleteBtn);
-      
-      dayHeader.appendChild(dateElement);
-      dayHeader.appendChild(dayStats);
-      dayElement.appendChild(dayHeader);
-      
-      // Sessions list
-      const sessionsList = document.createElement("div");
-      sessionsList.className = "space-y-2";
-      
-      day.sessions.forEach(session => {
-        const sessionElement = document.createElement("div");
-        sessionElement.className = "session-card bg-gray-50 p-3 rounded-lg";
-        
-        // Find which unit this session belongs to
-        const unit = units.find(u => u.subjects.includes(session));
-        const userData = getCurrentUserData();
-        const userProgress = userData?.progress || {};
-        const isCompleted = unit && userProgress[`unit${units.indexOf(unit)}_subject${unit.subjects.indexOf(session)}`] === true;
-        
-        sessionElement.className += ` ${unit ? unit.borderColor : 'border-l-gray-400'} ${isCompleted ? 'opacity-70' : ''}`;
-        
-        const sessionContent = document.createElement("div");
-        sessionContent.className = "flex justify-between items-center";
-        
-        const sessionTitle = document.createElement("div");
-        sessionTitle.className = `font-medium ${isCompleted ? 'line-through text-gray-500' : 'text-gray-700'}`;
-        sessionTitle.textContent = session;
-        
-        const sessionStatus = document.createElement("div");
-        sessionStatus.className = "text-xs";
-        
-        if (isCompleted) {
-          sessionStatus.innerHTML = '<i class="fas fa-check-circle text-green-500"></i>';
-        } else {
-          sessionStatus.innerHTML = '<i class="far fa-circle text-gray-400"></i>';
-        }
-        
-        sessionContent.appendChild(sessionTitle);
-        sessionContent.appendChild(sessionStatus);
-        sessionElement.appendChild(sessionContent);
-        
-        sessionsList.appendChild(sessionElement);
-      });
-      
-      dayElement.appendChild(sessionsList);
-      daysGrid.appendChild(dayElement);
-    });
-    
-    weekElement.appendChild(daysGrid);
-    container.appendChild(weekElement);
-  });
-}
-
-// Render list view
-function renderListView(studyPlan, container) {
-  studyPlan.forEach((day, index) => {
-    const dayElement = document.createElement("div");
-    dayElement.className = "border border-gray-200 rounded-lg p-4 hover:shadow-md transition";
-    
-    const progress = calculateDayProgress(day);
-    
-    dayElement.innerHTML = `
-      <div class="flex justify-between mb-2">
-        <span class="font-semibold text-indigo-700">${formatDate(day.date)}</span>
-        <div class="flex items-center space-x-2">
-          <span class="text-sm ${progress === 100 ? 'text-green-500' : progress >= 50 ? 'text-yellow-500' : 'text-red-500'}">${progress}% Completed</span>
-          <button class="text-red-400 hover:text-red-600 delete-day" data-index="${index}">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-      </div>
-      <div class="text-sm text-gray-500 mb-2">
-        <i class="far fa-clock mr-1"></i>${day.duration || 2} hours per session
-      </div>
-      <ul class="list-disc ml-5 text-sm space-y-1">
-        ${day.sessions.map(session => {
-          const unit = units.find(u => u.subjects.includes(session));
-          const userData = getCurrentUserData();
-          const userProgress = userData?.progress || {};
-          const isCompleted = unit && userProgress[`unit${units.indexOf(unit)}_subject${unit.subjects.indexOf(session)}`] === true;
-          return `<li class="${isCompleted ? 'line-through text-gray-400' : ''}">${session} ${isCompleted ? '<i class="fas fa-check-circle text-green-500 ml-1"></i>' : ''}</li>`;
-        }).join("")}
-      </ul>
-    `;
-    
-    container.appendChild(dayElement);
-  });
-  
-  // Add event listeners to delete buttons
-  document.querySelectorAll('.delete-day').forEach(button => {
-    button.addEventListener('click', function() {
-      const index = parseInt(this.getAttribute('data-index'));
-      studyPlan.splice(index, 1);
-      
-      // Save to user data
-      const userData = getCurrentUserData();
-      userData.studyPlan = studyPlan;
-      saveCurrentUserData(userData);
-      
-      renderStudyPlan();
-      updateStatistics();
-    });
-  });
-}
-
-// Calculate day progress
-function calculateDayProgress(day) {
-  const userData = getCurrentUserData();
-  const userProgress = userData?.progress || {};
-  
-  const done = day.sessions.filter(session => {
-    return units.some((unit, uIndex) => 
-      unit.subjects.includes(session) && 
-      userProgress[`unit${uIndex}_subject${unit.subjects.indexOf(session)}`] === true
-    );
-  }).length;
-  
-  return Math.round((done / day.sessions.length) * 100) || 0;
-}
-
 // Format date for display
-function formatDate(dateString) {
-  const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+function formatDate(dateString, short = false) {
+  const options = short 
+    ? { weekday: 'short', month: 'short', day: 'numeric' }
+    : { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
   return new Date(dateString).toLocaleDateString('en-US', options);
 }
 
-// Toggle dark mode
-function toggleDarkMode() {
-  document.body.classList.toggle("dark-mode");
-  const button = document.getElementById("toggleDark");
+// Format month for display
+function formatMonth(dateString) {
+  const options = { year: 'numeric', month: 'long' };
+  return new Date(dateString).toLocaleDateString('en-US', options);
+}
+
+// Initialize app components
+function initializeApp() {
+  // Set default date to today
+  document.getElementById("manualDate").valueAsDate = new Date();
   
-  if (document.body.classList.contains("dark-mode")) {
-    button.innerHTML = '<i class="fas fa-sun mr-2"></i>Toggle Light Mode';
-  } else {
-    button.innerHTML = '<i class="fas fa-moon mr-2"></i>Toggle Dark Mode';
+  populateSubjects();
+  updateProgress();
+  updateCountdown();
+  renderStudyPlan();
+  updateStatistics();
+  
+  // Set up countdown interval
+  setInterval(updateCountdown, 1000);
+  
+  // Check for saved dark mode preference
+  if (localStorage.getItem('darkMode') === 'enabled') {
+    document.body.classList.add('dark-mode');
+    document.getElementById('toggleDark').innerHTML = '<i class="fas fa-sun"></i>';
   }
 }
 
