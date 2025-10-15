@@ -7,6 +7,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
+  /* Your existing CSS styles remain exactly the same */
   body { 
     background-color: #f8fafc; 
     font-family: 'Inter', sans-serif;
@@ -230,6 +231,28 @@
   .page.active {
     opacity: 1;
     transform: translateX(0);
+  }
+
+  /* Status Indicator */
+  .status-indicator {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  .status-online {
+    background: #10b981;
+    color: white;
+  }
+  
+  .status-offline {
+    background: #ef4444;
+    color: white;
   }
 
   /* Mobile Responsive Styles */
@@ -459,6 +482,12 @@
 </style>
 </head>
 <body class="min-h-screen flex flex-col">
+
+<!-- Status Indicator -->
+<div id="statusIndicator" class="status-indicator status-offline hidden">
+  <i class="fas fa-wifi mr-1"></i>
+  <span>Offline</span>
+</div>
 
 <!-- Login Screen -->
 <div id="loginScreen" class="login-container">
@@ -816,6 +845,9 @@
 </div> <!-- End of appContainer -->
 
 <script>
+// === VERCEL BACKEND CONFIGURATION ===
+const API_BASE = 'https://ldc-study-planner.vercel.app/api';
+
 // Set dates dynamically
 const currentYear = new Date().getFullYear();
 const startTime = new Date(`${currentYear}-10-14T18:18:00`);
@@ -873,8 +905,119 @@ let studyPlan = []; // store all manual plans
 let isTimetableView = true; // Track current view mode
 let currentUser = null; // Track current user
 let currentPage = 'dashboard'; // Track current page
+let backendOnline = false; // Track backend status
 
-// User management functions
+// === VERCEL BACKEND FUNCTIONS ===
+async function checkBackendStatus() {
+  try {
+    const response = await fetch(API_BASE + '/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: 'test', password: 'test' })
+    });
+    
+    backendOnline = true;
+    document.getElementById('statusIndicator').classList.remove('status-offline', 'hidden');
+    document.getElementById('statusIndicator').classList.add('status-online');
+    document.getElementById('statusIndicator').innerHTML = '<i class="fas fa-wifi mr-1"></i><span>Online</span>';
+  } catch (error) {
+    backendOnline = false;
+    document.getElementById('statusIndicator').classList.remove('status-online', 'hidden');
+    document.getElementById('statusIndicator').classList.add('status-offline');
+    document.getElementById('statusIndicator').innerHTML = '<i class="fas fa-wifi mr-1"></i><span>Offline</span>';
+  }
+}
+
+async function registerUser(name, email, password) {
+  if (!backendOnline) {
+    // Fallback to localStorage
+    const users = getUsers();
+    if (users[email]) {
+      return { success: false, error: 'User already exists' };
+    }
+    
+    users[email] = {
+      name: name,
+      password: password,
+      studyPlan: [],
+      progress: {},
+      createdAt: new Date().toISOString()
+    };
+    saveUsers(users);
+    
+    return { 
+      success: true, 
+      student: { id: email, username: email, email: email, full_name: name }
+    };
+  }
+  
+  try {
+    const response = await fetch(API_BASE + '/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        username: email, 
+        password: password, 
+        email: email, 
+        full_name: name 
+      })
+    });
+    return await response.json();
+  } catch (error) {
+    return { success: false, error: 'Network error' };
+  }
+}
+
+async function loginUser(email, password) {
+  if (!backendOnline) {
+    // Fallback to localStorage
+    const users = getUsers();
+    const user = users[email];
+    
+    if (user && user.password === password) {
+      return {
+        success: true,
+        student: { id: email, username: email, email: email, full_name: user.name },
+        progress: user.progress || {},
+        studyPlan: user.studyPlan || []
+      };
+    } else {
+      return { success: false, error: 'Invalid credentials' };
+    }
+  }
+  
+  try {
+    const response = await fetch(API_BASE + '/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: email, password: password })
+    });
+    return await response.json();
+  } catch (error) {
+    return { success: false, error: 'Network error' };
+  }
+}
+
+async function saveUserData(studentId, progress, studyPlan) {
+  if (!backendOnline || !currentUser) return { success: true }; // Silent fail for offline
+  
+  try {
+    const response = await fetch(API_BASE + '/save-data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        studentId: studentId, 
+        progress: progress, 
+        studyPlan: studyPlan 
+      })
+    });
+    return await response.json();
+  } catch (error) {
+    return { success: false, error: 'Network error' };
+  }
+}
+
+// === LOCALSTORAGE FALLBACK FUNCTIONS ===
 function getUsers() {
   const users = localStorage.getItem('ldcUsers');
   return users ? JSON.parse(users) : {};
@@ -886,15 +1029,29 @@ function saveUsers(users) {
 
 function getCurrentUserData() {
   if (!currentUser) return null;
-  const users = getUsers();
-  return users[currentUser] || null;
+  
+  if (!backendOnline) {
+    // Use localStorage when offline
+    const users = getUsers();
+    return users[currentUser] || null;
+  }
+  
+  // When online, we'll rely on the backend response
+  return null;
 }
 
 function saveCurrentUserData(userData) {
   if (!currentUser) return;
-  const users = getUsers();
-  users[currentUser] = userData;
-  saveUsers(users);
+  
+  if (!backendOnline) {
+    // Save to localStorage when offline
+    const users = getUsers();
+    users[currentUser] = userData;
+    saveUsers(users);
+  } else {
+    // Save to backend when online
+    saveUserData(currentUser, userData.progress, userData.studyPlan);
+  }
 }
 
 // Navigation functions
@@ -993,7 +1150,10 @@ function updateAccountPage() {
 }
 
 // Initialize the app
-function init() {
+async function init() {
+  // Check backend status first
+  await checkBackendStatus();
+  
   // Check if user is already logged in
   const savedUser = localStorage.getItem('currentUser');
   if (savedUser) {
@@ -1069,6 +1229,16 @@ function init() {
       handleRegister();
     }
   });
+  
+  // Auto-save every 2 minutes
+  setInterval(async () => {
+    if (currentUser) {
+      const userData = getCurrentUserData();
+      if (userData) {
+        await saveUserData(currentUser, userData.progress, userData.studyPlan);
+      }
+    }
+  }, 120000);
 }
 
 // Show login screen
@@ -1169,7 +1339,7 @@ function showRegisterForm() {
 }
 
 // Handle user login
-function handleLogin() {
+async function handleLogin() {
   const email = document.getElementById('loginEmail').value;
   const password = document.getElementById('loginPassword').value;
   
@@ -1178,20 +1348,33 @@ function handleLogin() {
     return;
   }
   
-  const users = getUsers();
+  const result = await loginUser(email, password);
   
-  if (users[email] && users[email].password === password) {
-    // Successful login
+  if (result.success) {
     currentUser = email;
     localStorage.setItem('currentUser', email);
+    
+    // Store user data locally for offline access
+    if (!backendOnline) {
+      const users = getUsers();
+      users[email] = {
+        name: result.student.full_name,
+        password: password,
+        studyPlan: result.studyPlan || [],
+        progress: result.progress || {},
+        createdAt: new Date().toISOString()
+      };
+      saveUsers(users);
+    }
+    
     showCountdownScreen();
   } else {
-    showAuthError('Invalid email or password', 'loginForm');
+    showAuthError(result.error, 'loginForm');
   }
 }
 
 // Handle user registration
-function handleRegister() {
+async function handleRegister() {
   const name = document.getElementById('registerName').value;
   const email = document.getElementById('registerEmail').value;
   const password = document.getElementById('registerPassword').value;
@@ -1206,28 +1389,19 @@ function handleRegister() {
     return;
   }
   
-  const users = getUsers();
+  const result = await registerUser(name, email, password);
   
-  if (users[email]) {
-    showAuthError('An account with this email already exists', 'registerForm');
-    return;
+  if (result.success) {
+    // Auto-login after registration
+    const loginResult = await loginUser(email, password);
+    if (loginResult.success) {
+      currentUser = email;
+      localStorage.setItem('currentUser', email);
+      showCountdownScreen();
+    }
+  } else {
+    showAuthError(result.error, 'registerForm');
   }
-  
-  // Create new user
-  users[email] = {
-    name: name,
-    password: password,
-    studyPlan: [],
-    progress: {},
-    createdAt: new Date().toISOString()
-  };
-  
-  saveUsers(users);
-  
-  // Auto-login after registration
-  currentUser = email;
-  localStorage.setItem('currentUser', email);
-  showCountdownScreen();
 }
 
 // Handle user logout
