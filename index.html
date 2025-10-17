@@ -846,7 +846,6 @@
 
 <script>
 // === BACKEND CONFIGURATION ===
-// UPDATED: Your working Render backend URL
 const API_BASE = 'https://down-backend.onrender.com/api';
 
 // Set dates dynamically
@@ -902,11 +901,11 @@ const units = [
   }
 ];
 
-let studyPlan = []; // store all manual plans
-let isTimetableView = true; // Track current view mode
-let currentUser = null; // Track current user
-let currentPage = 'dashboard'; // Track current page
-let backendOnline = false; // Track backend status
+let studyPlan = [];
+let isTimetableView = true;
+let currentUser = null;
+let currentPage = 'dashboard';
+let backendOnline = false;
 
 // === BACKEND FUNCTIONS ===
 async function checkBackendStatus() {
@@ -930,7 +929,6 @@ async function checkBackendStatus() {
 
 async function registerUser(name, email, password) {
   if (!backendOnline) {
-    // Fallback to localStorage
     const users = getUsers();
     if (users[email]) {
       return { success: false, error: 'User already exists' };
@@ -962,15 +960,18 @@ async function registerUser(name, email, password) {
         full_name: name 
       })
     });
-    return await response.json();
+    
+    const data = await response.json();
+    console.log('Register response:', data);
+    return data;
   } catch (error) {
-    return { success: false, error: 'Network error' };
+    console.error('Register network error:', error);
+    return { success: false, error: 'Network error. Please try again.' };
   }
 }
 
 async function loginUser(email, password) {
   if (!backendOnline) {
-    // Fallback to localStorage
     const users = getUsers();
     const user = users[email];
     
@@ -987,19 +988,24 @@ async function loginUser(email, password) {
   }
   
   try {
+    console.log('Attempting login to:', API_BASE + '/login');
     const response = await fetch(API_BASE + '/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: email, password: password })
     });
-    return await response.json();
+    
+    const data = await response.json();
+    console.log('Login response:', data);
+    return data;
   } catch (error) {
-    return { success: false, error: 'Network error' };
+    console.error('Login network error:', error);
+    return { success: false, error: 'Network error. Please check your connection.' };
   }
 }
 
 async function saveUserData(studentId, progress, studyPlan) {
-  if (!backendOnline || !currentUser) return { success: true }; // Silent fail for offline
+  if (!backendOnline || !currentUser) return { success: true };
   
   try {
     const response = await fetch(API_BASE + '/save-data', {
@@ -1034,12 +1040,10 @@ function getCurrentUserData() {
   if (!currentUser) return null;
   
   if (!backendOnline) {
-    // Use localStorage when offline
     const users = getUsers();
     return users[currentUser] || null;
   }
   
-  // When online, we'll rely on the backend response
   return null;
 }
 
@@ -1047,19 +1051,16 @@ function saveCurrentUserData(userData) {
   if (!currentUser) return;
   
   if (!backendOnline) {
-    // Save to localStorage when offline
     const users = getUsers();
     users[currentUser] = userData;
     saveUsers(users);
   } else {
-    // Save to backend when online
     saveUserData(currentUser, userData.progress, userData.studyPlan);
   }
 }
 
 // Navigation functions
 function navigateTo(page) {
-  // Update navigation active state
   document.querySelectorAll('.nav-item').forEach(item => {
     item.classList.remove('active');
   });
@@ -1068,13 +1069,11 @@ function navigateTo(page) {
     item.classList.add('active');
   });
   
-  // Hide all pages
   document.querySelectorAll('.page').forEach(pageEl => {
     pageEl.classList.remove('active');
     pageEl.classList.add('hidden');
   });
   
-  // Show target page with smooth transition
   setTimeout(() => {
     const targetPage = document.getElementById(`${page}-page`);
     targetPage.classList.remove('hidden');
@@ -1085,7 +1084,6 @@ function navigateTo(page) {
   
   currentPage = page;
   
-  // Update page-specific content if needed
   if (page === 'dashboard') {
     updateDashboard();
   } else if (page === 'account') {
@@ -1094,7 +1092,6 @@ function navigateTo(page) {
 }
 
 function updateDashboard() {
-  // Update recent activity
   const userData = getCurrentUserData();
   const recentActivity = document.getElementById('recentActivity');
   
@@ -1120,7 +1117,6 @@ function updateAccountPage() {
     document.getElementById('accountName').value = userData.name || '';
     document.getElementById('accountEmail').value = currentUser || '';
     
-    // Update account stats
     const total = units.reduce((sum, u) => sum + u.subjects.length, 0);
     const userProgress = userData.progress || {};
     const done = units.flatMap((u, i) => 
@@ -1154,10 +1150,8 @@ function updateAccountPage() {
 
 // Initialize the app
 async function init() {
-  // Check backend status first
   await checkBackendStatus();
   
-  // Check if user is already logged in
   const savedUser = localStorage.getItem('currentUser');
   if (savedUser) {
     currentUser = savedUser;
@@ -1166,7 +1160,6 @@ async function init() {
     showLoginScreen();
   }
   
-  // Set up login/register event listeners
   document.getElementById("loginBtn").addEventListener("click", handleLogin);
   document.getElementById("registerBtn").addEventListener("click", handleRegister);
   document.getElementById("showRegister").addEventListener("click", showRegisterForm);
@@ -1176,7 +1169,6 @@ async function init() {
   document.getElementById("logoutBtn").addEventListener("click", handleLogout);
   document.getElementById("logoutBtnAccount").addEventListener("click", handleLogout);
   
-  // Set up navigation
   document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', function() {
       const page = this.getAttribute('data-page');
@@ -1184,16 +1176,14 @@ async function init() {
     });
   });
   
-  // Quick action buttons
   document.querySelectorAll('[data-page]').forEach(button => {
-    if (button.classList.contains('nav-item')) return; // Skip nav items
+    if (button.classList.contains('nav-item')) return;
     button.addEventListener('click', function() {
       const page = this.getAttribute('data-page');
       navigateTo(page);
     });
   });
   
-  // Close user menu when clicking outside
   document.addEventListener('click', (e) => {
     const userMenu = document.getElementById('userMenu');
     const userMenuBtn = document.getElementById('userMenuBtn');
@@ -1202,38 +1192,23 @@ async function init() {
     }
   });
   
-  // Allow Enter key to submit forms
+  // Enter key support
   document.getElementById('loginEmail').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      handleLogin();
-    }
+    if (e.key === 'Enter') handleLogin();
   });
-  
   document.getElementById('loginPassword').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      handleLogin();
-    }
+    if (e.key === 'Enter') handleLogin();
   });
-  
   document.getElementById('registerName').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      handleRegister();
-    }
+    if (e.key === 'Enter') handleRegister();
   });
-  
   document.getElementById('registerEmail').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      handleRegister();
-    }
+    if (e.key === 'Enter') handleRegister();
   });
-  
   document.getElementById('registerPassword').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      handleRegister();
-    }
+    if (e.key === 'Enter') handleRegister();
   });
   
-  // Auto-save every 2 minutes
   setInterval(async () => {
     if (currentUser) {
       const userData = getCurrentUserData();
@@ -1244,64 +1219,47 @@ async function init() {
   }, 120000);
 }
 
-// Show login screen
 function showLoginScreen() {
   document.getElementById('loginScreen').classList.remove('hidden');
   document.getElementById('loginCard').classList.remove('hidden');
   document.getElementById('countdownScreen').classList.add('hidden');
   document.getElementById('appContainer').classList.add('hidden');
   
-  // Clear any previous form data
   document.getElementById('loginEmail').value = '';
   document.getElementById('loginPassword').value = '';
   document.getElementById('registerName').value = '';
   document.getElementById('registerEmail').value = '';
   document.getElementById('registerPassword').value = '';
   
-  // Show login form by default
   showLoginForm();
 }
 
-// Show countdown screen
 function showCountdownScreen() {
-  // First hide the login screen
   document.getElementById('loginScreen').classList.add('hidden');
-  
-  // Then show the countdown screen
   setTimeout(() => {
     document.getElementById('countdownScreen').classList.remove('hidden');
   }, 500);
 }
 
-// Show app screen with smooth transition
 function showAppScreen() {
-  // First hide the countdown screen
   document.getElementById('countdownScreen').classList.add('hidden');
-  
-  // Then show the app after animation completes
   setTimeout(() => {
     document.getElementById('appContainer').classList.remove('hidden');
     document.getElementById('appContainer').classList.add('visible');
     
-    // Load user data
     const userData = getCurrentUserData();
     if (userData) {
       document.getElementById('userName').textContent = userData.name;
       document.getElementById('menuUserName').textContent = userData.name;
       document.getElementById('menuUserEmail').textContent = currentUser;
       
-      // Load user's study plan and progress
       studyPlan = userData.studyPlan || [];
-      
-      // Initialize app components
       initializeApp();
     }
   }, 800);
 }
 
-// Initialize app components
 function initializeApp() {
-  // Set default date to today
   document.getElementById("manualDate").valueAsDate = new Date();
   
   populateSubjects();
@@ -1312,36 +1270,27 @@ function initializeApp() {
   updateStatistics();
   updateDashboard();
   
-  // Set up event listeners
   document.getElementById("addToPlan").addEventListener("click", addToPlan);
   document.getElementById("printBtn").addEventListener("click", () => window.print());
   document.getElementById("clearPlanBtn").addEventListener("click", clearStudyPlan);
   document.getElementById("toggleDark").addEventListener("click", toggleDarkMode);
   document.getElementById("toggleView").addEventListener("click", toggleView);
   
-  // Set up countdown interval
   setInterval(updateCountdown, 1000);
 }
 
-// Show login form
 function showLoginForm() {
   document.getElementById('loginForm').classList.remove('hidden');
   document.getElementById('registerForm').classList.add('hidden');
-  
-  // Clear any existing errors
   removeAuthErrors();
 }
 
-// Show register form
 function showRegisterForm() {
   document.getElementById('loginForm').classList.add('hidden');
   document.getElementById('registerForm').classList.remove('hidden');
-  
-  // Clear any existing errors
   removeAuthErrors();
 }
 
-// Handle user login
 async function handleLogin() {
   const email = document.getElementById('loginEmail').value;
   const password = document.getElementById('loginPassword').value;
@@ -1351,18 +1300,20 @@ async function handleLogin() {
     return;
   }
   
+  const loginBtn = document.getElementById('loginBtn');
+  loginBtn.textContent = 'Signing in...';
+  loginBtn.disabled = true;
+  
   const result = await loginUser(email, password);
   
   if (result.success) {
     currentUser = email;
     localStorage.setItem('currentUser', email);
     
-    // Store token if available
     if (result.token) {
       localStorage.setItem('token', result.token);
     }
     
-    // Store user data locally for offline access
     if (!backendOnline) {
       const users = getUsers();
       users[email] = {
@@ -1379,9 +1330,11 @@ async function handleLogin() {
   } else {
     showAuthError(result.error, 'loginForm');
   }
+  
+  loginBtn.textContent = 'Sign In';
+  loginBtn.disabled = false;
 }
 
-// Handle user registration
 async function handleRegister() {
   const name = document.getElementById('registerName').value;
   const email = document.getElementById('registerEmail').value;
@@ -1397,15 +1350,17 @@ async function handleRegister() {
     return;
   }
   
+  const registerBtn = document.getElementById('registerBtn');
+  registerBtn.textContent = 'Creating Account...';
+  registerBtn.disabled = true;
+  
   const result = await registerUser(name, email, password);
   
   if (result.success) {
-    // Store token if available
     if (result.token) {
       localStorage.setItem('token', result.token);
     }
     
-    // Auto-login after registration
     const loginResult = await loginUser(email, password);
     if (loginResult.success) {
       currentUser = email;
@@ -1415,42 +1370,37 @@ async function handleRegister() {
   } else {
     showAuthError(result.error, 'registerForm');
   }
+  
+  registerBtn.textContent = 'Create Account';
+  registerBtn.disabled = false;
 }
 
-// Handle user logout
 function handleLogout() {
   currentUser = null;
   localStorage.removeItem('currentUser');
   localStorage.removeItem('token');
   document.getElementById('userMenu').classList.add('hidden');
   
-  // Show login screen with animation
   document.getElementById('appContainer').classList.remove('visible');
   setTimeout(() => {
     showLoginScreen();
   }, 500);
 }
 
-// Toggle user menu
 function toggleUserMenu() {
   document.getElementById('userMenu').classList.toggle('hidden');
 }
 
-// Show authentication error
 function showAuthError(message, formId) {
-  // Remove existing error if any
   removeAuthErrors();
   
-  // Create error element
   const errorEl = document.createElement('div');
   errorEl.className = 'auth-error bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4';
   errorEl.textContent = message;
   
-  // Insert error
   const currentForm = document.getElementById(formId);
   currentForm.insertBefore(errorEl, currentForm.firstChild);
   
-  // Auto-remove after 5 seconds
   setTimeout(() => {
     if (errorEl.parentNode) {
       errorEl.remove();
@@ -1458,13 +1408,11 @@ function showAuthError(message, formId) {
   }, 5000);
 }
 
-// Remove authentication errors
 function removeAuthErrors() {
   const existingErrors = document.querySelectorAll('.auth-error');
   existingErrors.forEach(error => error.remove());
 }
 
-// Populate multi-select subjects dropdown
 function populateSubjects() {
   const select = document.getElementById("manualSubjects");
   select.innerHTML = "";
@@ -1484,7 +1432,6 @@ function populateSubjects() {
   });
 }
 
-// Countdown
 function updateCountdown() {
   const now = new Date();
   const countdownEl = document.getElementById("countdown");
@@ -1516,7 +1463,6 @@ function updateCountdown() {
   }
 }
 
-// Render Units with checkboxes
 function renderUnits() {
   const container = document.getElementById("unitsContainer");
   container.innerHTML = "";
@@ -1556,7 +1502,6 @@ function renderUnits() {
       }
       
       checkbox.addEventListener("change", () => {
-        // Save progress to user data
         const userData = getCurrentUserData();
         if (!userData.progress) userData.progress = {};
         userData.progress[key] = checkbox.checked;
@@ -1585,9 +1530,7 @@ function renderUnits() {
   });
 }
 
-// Show completion alert
 function showCompletionAlert(subject, unitTitle) {
-  // Create a custom alert instead of using the default one
   const alertDiv = document.createElement("div");
   alertDiv.className = "fixed top-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm";
   alertDiv.innerHTML = `
@@ -1602,13 +1545,11 @@ function showCompletionAlert(subject, unitTitle) {
   
   document.body.appendChild(alertDiv);
   
-  // Remove after 3 seconds
   setTimeout(() => {
     alertDiv.remove();
   }, 3000);
 }
 
-// Overall progress
 function updateProgress() {
   const total = units.reduce((sum, u) => sum + u.subjects.length, 0);
   const userData = getCurrentUserData();
@@ -1623,7 +1564,6 @@ function updateProgress() {
   document.getElementById("progressText").textContent = `${done}/${total} Subjects (${percent}%) Completed`;
 }
 
-// Update statistics
 function updateStatistics() {
   const total = units.reduce((sum, u) => sum + u.subjects.length, 0);
   const userData = getCurrentUserData();
@@ -1658,7 +1598,6 @@ function updateStatistics() {
   document.getElementById('stats').innerHTML = statsHTML;
 }
 
-// Add manual plan
 function addToPlan() {
   const date = document.getElementById("manualDate").value;
   const duration = document.getElementById("studyDuration").value;
@@ -1671,7 +1610,6 @@ function addToPlan() {
   
   studyPlan.push({ date, duration, sessions: selected });
   
-  // Save to user data
   const userData = getCurrentUserData();
   userData.studyPlan = studyPlan;
   saveCurrentUserData(userData);
@@ -1680,11 +1618,9 @@ function addToPlan() {
   updateStatistics();
   updateDashboard();
   
-  // Clear selection
   document.getElementById("manualSubjects").selectedIndex = -1;
 }
 
-// Show error alert
 function showErrorAlert(message) {
   const alertDiv = document.createElement("div");
   alertDiv.className = "fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm";
@@ -1700,13 +1636,11 @@ function showErrorAlert(message) {
   
   document.body.appendChild(alertDiv);
   
-  // Remove after 3 seconds
   setTimeout(() => {
     alertDiv.remove();
   }, 3000);
 }
 
-// Clear study plan
 function clearStudyPlan() {
   if (studyPlan.length === 0) {
     showErrorAlert("Study plan is already empty!");
@@ -1716,7 +1650,6 @@ function clearStudyPlan() {
   if (confirm("Are you sure you want to clear your entire study plan?")) {
     studyPlan = [];
     
-    // Save to user data
     const userData = getCurrentUserData();
     userData.studyPlan = studyPlan;
     saveCurrentUserData(userData);
@@ -1727,7 +1660,6 @@ function clearStudyPlan() {
   }
 }
 
-// Toggle between timetable and list view
 function toggleView() {
   const timetable = document.getElementById("timetableView");
   const list = document.getElementById("listView");
@@ -1748,7 +1680,6 @@ function toggleView() {
   renderStudyPlan();
 }
 
-// Render study plan in both views
 function renderStudyPlan() {
   const timetable = document.getElementById("timetableView");
   const list = document.getElementById("listView");
@@ -1765,25 +1696,17 @@ function renderStudyPlan() {
   
   planSection.classList.remove("hidden");
   
-  // Sort study plan by date
   studyPlan.sort((a, b) => new Date(a.date) - new Date(b.date));
   
-  // Calculate plan stats
   const totalSessions = studyPlan.reduce((sum, day) => sum + day.sessions.length, 0);
   const totalHours = studyPlan.reduce((sum, day) => sum + (day.sessions.length * parseFloat(day.duration || 2)), 0);
   planStats.textContent = `${studyPlan.length} days, ${totalSessions} sessions, ${totalHours} hours`;
   
-  // Group study plan by week
   const weeks = groupStudyPlanByWeek(studyPlan);
-  
-  // Render timetable view
   renderTimetableView(weeks, timetable);
-  
-  // Render list view
   renderListView(studyPlan, list);
 }
 
-// Group study plan by week
 function groupStudyPlanByWeek(studyPlan) {
   const weeks = [];
   let currentWeek = [];
@@ -1811,20 +1734,17 @@ function groupStudyPlanByWeek(studyPlan) {
   return weeks;
 }
 
-// Get the start of the week (Monday)
 function getWeekStart(date) {
   const day = date.getDay();
-  const diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is Sunday
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1);
   return new Date(date.setDate(diff));
 }
 
-// Render timetable view
 function renderTimetableView(weeks, container) {
   weeks.forEach((week, weekIndex) => {
     const weekElement = document.createElement("div");
     weekElement.className = "mb-8";
     
-    // Week header
     const weekHeader = document.createElement("div");
     weekHeader.className = "flex justify-between items-center mb-4 p-3 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-lg";
     
@@ -1841,7 +1761,6 @@ function renderTimetableView(weeks, container) {
     weekHeader.appendChild(weekStats);
     weekElement.appendChild(weekHeader);
     
-    // Days grid
     const daysGrid = document.createElement("div");
     daysGrid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4";
     
@@ -1849,7 +1768,6 @@ function renderTimetableView(weeks, container) {
       const dayElement = document.createElement("div");
       dayElement.className = "timetable-day bg-white border border-gray-200 rounded-xl p-4 shadow-sm";
       
-      // Day header
       const dayHeader = document.createElement("div");
       dayHeader.className = "flex justify-between items-center mb-3 pb-2 border-b border-gray-100";
       
@@ -1877,7 +1795,6 @@ function renderTimetableView(weeks, container) {
         if (index !== -1) {
           studyPlan.splice(index, 1);
           
-          // Save to user data
           const userData = getCurrentUserData();
           userData.studyPlan = studyPlan;
           saveCurrentUserData(userData);
@@ -1896,7 +1813,6 @@ function renderTimetableView(weeks, container) {
       dayHeader.appendChild(dayStats);
       dayElement.appendChild(dayHeader);
       
-      // Sessions list
       const sessionsList = document.createElement("div");
       sessionsList.className = "space-y-2";
       
@@ -1904,7 +1820,6 @@ function renderTimetableView(weeks, container) {
         const sessionElement = document.createElement("div");
         sessionElement.className = "session-card bg-gray-50 p-3 rounded-lg";
         
-        // Find which unit this session belongs to
         const unit = units.find(u => u.subjects.includes(session));
         const userData = getCurrentUserData();
         const userProgress = userData?.progress || {};
@@ -1944,7 +1859,6 @@ function renderTimetableView(weeks, container) {
   });
 }
 
-// Render list view
 function renderListView(studyPlan, container) {
   studyPlan.forEach((day, index) => {
     const dayElement = document.createElement("div");
@@ -1979,13 +1893,11 @@ function renderListView(studyPlan, container) {
     container.appendChild(dayElement);
   });
   
-  // Add event listeners to delete buttons
   document.querySelectorAll('.delete-day').forEach(button => {
     button.addEventListener('click', function() {
       const index = parseInt(this.getAttribute('data-index'));
       studyPlan.splice(index, 1);
       
-      // Save to user data
       const userData = getCurrentUserData();
       userData.studyPlan = studyPlan;
       saveCurrentUserData(userData);
@@ -1997,7 +1909,6 @@ function renderListView(studyPlan, container) {
   });
 }
 
-// Calculate day progress
 function calculateDayProgress(day) {
   const userData = getCurrentUserData();
   const userProgress = userData?.progress || {};
@@ -2012,13 +1923,11 @@ function calculateDayProgress(day) {
   return Math.round((done / day.sessions.length) * 100) || 0;
 }
 
-// Format date for display
 function formatDate(dateString) {
   const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
   return new Date(dateString).toLocaleDateString('en-US', options);
 }
 
-// Toggle dark mode
 function toggleDarkMode() {
   document.body.classList.toggle("dark-mode");
   const button = document.getElementById("toggleDark");
