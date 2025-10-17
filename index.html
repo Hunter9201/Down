@@ -255,6 +255,20 @@
     color: white;
   }
 
+  /* Debug Panel */
+  .debug-panel {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    max-width: 300px;
+    z-index: 1000;
+  }
+
   /* Mobile Responsive Styles */
   @media (max-width: 768px) {
     .countdown-title {
@@ -487,6 +501,13 @@
 <div id="statusIndicator" class="status-indicator status-offline hidden">
   <i class="fas fa-wifi mr-1"></i>
   <span>Offline</span>
+</div>
+
+<!-- Debug Panel -->
+<div id="debugPanel" class="debug-panel hidden">
+  <div><strong>Debug Info</strong></div>
+  <div id="debugStatus">Status: Unknown</div>
+  <div id="debugError">No errors</div>
 </div>
 
 <!-- Login Screen -->
@@ -848,6 +869,33 @@
 // === BACKEND CONFIGURATION ===
 const API_BASE = 'https://down-backend.onrender.com/api';
 
+// Debug mode
+const DEBUG = true;
+
+function debugLog(message, data = null) {
+  if (DEBUG) {
+    console.log(`[DEBUG] ${message}`, data || '');
+    updateDebugPanel(message, data);
+  }
+}
+
+function updateDebugPanel(message, data = null) {
+  const debugPanel = document.getElementById('debugPanel');
+  const debugStatus = document.getElementById('debugStatus');
+  
+  if (debugPanel && debugStatus) {
+    debugPanel.classList.remove('hidden');
+    debugStatus.textContent = `Status: ${message}`;
+    
+    if (data) {
+      const debugError = document.getElementById('debugError');
+      if (debugError) {
+        debugError.textContent = `Data: ${JSON.stringify(data).substring(0, 100)}`;
+      }
+    }
+  }
+}
+
 // Set dates dynamically
 const currentYear = new Date().getFullYear();
 const startTime = new Date(`${currentYear}-10-14T18:18:00`);
@@ -910,25 +958,44 @@ let backendOnline = false;
 // === BACKEND FUNCTIONS ===
 async function checkBackendStatus() {
   try {
-    const response = await fetch(API_BASE + '/health');
-    const data = await response.json();
+    debugLog('Checking backend status...');
+    const response = await fetch(API_BASE + '/health', {
+      method: 'GET',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
     
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
     backendOnline = true;
+    
     document.getElementById('statusIndicator').classList.remove('status-offline', 'hidden');
     document.getElementById('statusIndicator').classList.add('status-online');
     document.getElementById('statusIndicator').innerHTML = '<i class="fas fa-wifi mr-1"></i><span>Online</span>';
-    console.log('✅ Backend connected:', data);
+    
+    debugLog('✅ Backend connected:', data);
+    return true;
   } catch (error) {
     backendOnline = false;
     document.getElementById('statusIndicator').classList.remove('status-online', 'hidden');
     document.getElementById('statusIndicator').classList.add('status-offline');
     document.getElementById('statusIndicator').innerHTML = '<i class="fas fa-wifi mr-1"></i><span>Offline</span>';
-    console.log('❌ Backend offline, using localStorage');
+    
+    debugLog('❌ Backend offline:', error.message);
+    return false;
   }
 }
 
 async function registerUser(name, email, password) {
+  debugLog('Registering user...', { name, email, password: '***' });
+  
   if (!backendOnline) {
+    debugLog('Using localStorage fallback for registration');
     const users = getUsers();
     if (users[email]) {
       return { success: false, error: 'User already exists' };
@@ -950,9 +1017,14 @@ async function registerUser(name, email, password) {
   }
   
   try {
+    debugLog('Sending registration request to backend...');
     const response = await fetch(API_BASE + '/register', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      mode: 'cors',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
       body: JSON.stringify({ 
         username: email, 
         password: password, 
@@ -961,17 +1033,30 @@ async function registerUser(name, email, password) {
       })
     });
     
-    const data = await response.json();
-    console.log('Register response:', data);
+    const responseText = await response.text();
+    debugLog('Registration response raw:', responseText);
+    
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      debugLog('Failed to parse JSON response:', responseText);
+      return { success: false, error: 'Invalid response from server' };
+    }
+    
+    debugLog('Register response:', data);
     return data;
   } catch (error) {
-    console.error('Register network error:', error);
+    debugLog('Register network error:', error);
     return { success: false, error: 'Network error. Please try again.' };
   }
 }
 
 async function loginUser(email, password) {
+  debugLog('Logging in user...', { email, password: '***' });
+  
   if (!backendOnline) {
+    debugLog('Using localStorage fallback for login');
     const users = getUsers();
     const user = users[email];
     
@@ -988,18 +1073,32 @@ async function loginUser(email, password) {
   }
   
   try {
-    console.log('Attempting login to:', API_BASE + '/login');
+    debugLog('Sending login request to backend...');
     const response = await fetch(API_BASE + '/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      mode: 'cors',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
       body: JSON.stringify({ username: email, password: password })
     });
     
-    const data = await response.json();
-    console.log('Login response:', data);
+    const responseText = await response.text();
+    debugLog('Login response raw:', responseText);
+    
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      debugLog('Failed to parse JSON response:', responseText);
+      return { success: false, error: 'Invalid response from server' };
+    }
+    
+    debugLog('Login response:', data);
     return data;
   } catch (error) {
-    console.error('Login network error:', error);
+    debugLog('Login network error:', error);
     return { success: false, error: 'Network error. Please check your connection.' };
   }
 }
@@ -1010,6 +1109,7 @@ async function saveUserData(studentId, progress, studyPlan) {
   try {
     const response = await fetch(API_BASE + '/save-data', {
       method: 'POST',
+      mode: 'cors',
       headers: { 
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
@@ -1150,6 +1250,7 @@ function updateAccountPage() {
 
 // Initialize the app
 async function init() {
+  debugLog('Initializing application...');
   await checkBackendStatus();
   
   const savedUser = localStorage.getItem('currentUser');
