@@ -845,8 +845,9 @@
 </div> <!-- End of appContainer -->
 
 <script>
-// === VERCEL BACKEND CONFIGURATION ===
-const API_BASE = 'https://ldc-study-planner.vercel.app/api';
+// === BACKEND CONFIGURATION ===
+// UPDATED: Your working Render backend URL
+const API_BASE = 'https://down-backend.onrender.com/api';
 
 // Set dates dynamically
 const currentYear = new Date().getFullYear();
@@ -907,24 +908,23 @@ let currentUser = null; // Track current user
 let currentPage = 'dashboard'; // Track current page
 let backendOnline = false; // Track backend status
 
-// === VERCEL BACKEND FUNCTIONS ===
+// === BACKEND FUNCTIONS ===
 async function checkBackendStatus() {
   try {
-    const response = await fetch(API_BASE + '/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: 'test', password: 'test' })
-    });
+    const response = await fetch(API_BASE + '/health');
+    const data = await response.json();
     
     backendOnline = true;
     document.getElementById('statusIndicator').classList.remove('status-offline', 'hidden');
     document.getElementById('statusIndicator').classList.add('status-online');
     document.getElementById('statusIndicator').innerHTML = '<i class="fas fa-wifi mr-1"></i><span>Online</span>';
+    console.log('✅ Backend connected:', data);
   } catch (error) {
     backendOnline = false;
     document.getElementById('statusIndicator').classList.remove('status-online', 'hidden');
     document.getElementById('statusIndicator').classList.add('status-offline');
     document.getElementById('statusIndicator').innerHTML = '<i class="fas fa-wifi mr-1"></i><span>Offline</span>';
+    console.log('❌ Backend offline, using localStorage');
   }
 }
 
@@ -1004,7 +1004,10 @@ async function saveUserData(studentId, progress, studyPlan) {
   try {
     const response = await fetch(API_BASE + '/save-data', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+      },
       body: JSON.stringify({ 
         studentId: studentId, 
         progress: progress, 
@@ -1354,6 +1357,11 @@ async function handleLogin() {
     currentUser = email;
     localStorage.setItem('currentUser', email);
     
+    // Store token if available
+    if (result.token) {
+      localStorage.setItem('token', result.token);
+    }
+    
     // Store user data locally for offline access
     if (!backendOnline) {
       const users = getUsers();
@@ -1392,6 +1400,11 @@ async function handleRegister() {
   const result = await registerUser(name, email, password);
   
   if (result.success) {
+    // Store token if available
+    if (result.token) {
+      localStorage.setItem('token', result.token);
+    }
+    
     // Auto-login after registration
     const loginResult = await loginUser(email, password);
     if (loginResult.success) {
@@ -1408,6 +1421,7 @@ async function handleRegister() {
 function handleLogout() {
   currentUser = null;
   localStorage.removeItem('currentUser');
+  localStorage.removeItem('token');
   document.getElementById('userMenu').classList.add('hidden');
   
   // Show login screen with animation
