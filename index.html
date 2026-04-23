@@ -1,2047 +1,436 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Countdown — LDC Study Planner</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-  /* Your existing CSS styles remain exactly the same */
-  body { 
-    background-color: #f8fafc; 
-    font-family: 'Inter', sans-serif;
-    transition: background-color 0.3s, color 0.3s;
-    overflow-x: hidden;
-  }
-  .progress-bar { 
-    height: 10px; 
-    border-radius: 6px; 
-    background: #e5e7eb; 
-    overflow: hidden; 
-  }
-  .progress-inner { 
-    height: 100%; 
-    background: linear-gradient(to right, #4f46e5, #9333ea); 
-    transition: width 0.5s ease; 
-  }
-  .dark-mode { 
-    background-color: #1f2937; 
-    color: #f9fafb; 
-  }
-  .dark-mode .bg-white { 
-    background-color: #374151 !important; 
-    color: #f9fafb; 
-  }
-  .dark-mode input, .dark-mode select, .dark-mode textarea { 
-    background-color: #4b5563; 
-    color: #f9fafb; 
-    border-color: #6b7280; 
-  }
-  .dark-mode .border-gray-200 {
-    border-color: #4b5563;
-  }
-  .subject-card {
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  .subject-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  }
-  .completed {
-    text-decoration: line-through;
-    opacity: 0.7;
-  }
-  .timetable-day {
-    transition: all 0.3s ease;
-  }
-  .timetable-day:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-  }
-  .session-card {
-    border-left: 4px solid;
-    transition: all 0.2s ease;
-  }
-  .session-card:hover {
-    transform: translateX(5px);
-  }
-  .login-container {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    transition: opacity 0.5s ease, visibility 0.5s ease;
-  }
-  .login-container.hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-  }
-  .login-card {
-    backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    transform: translateY(0);
-    transition: transform 0.5s ease, opacity 0.5s ease;
-  }
-  .login-card.hidden {
-    transform: translateY(-20px);
-    opacity: 0;
-  }
-  .countdown-container {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
-    color: white;
-    flex-direction: column;
-    text-align: center;
-    transition: opacity 0.8s ease, visibility 0.8s ease;
-  }
-  .countdown-container.hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-  }
-  .countdown-title {
-    font-size: 5rem;
-    font-weight: 900;
-    margin-bottom: 2rem;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    background: linear-gradient(to right, #e53e3e, #ed8936, #ecc94b);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 30px rgba(229, 62, 62, 0.5);
-  }
-  .scary-text {
-    font-size: 1.8rem;
-    margin-bottom: 3rem;
-    max-width: 800px;
-    line-height: 1.6;
-    font-weight: 300;
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeInUp 1s ease forwards;
-  }
-  .scary-text:nth-child(2) {
-    animation-delay: 1s;
-  }
-  .scary-text:nth-child(3) {
-    animation-delay: 2s;
-  }
-  .scary-text:nth-child(4) {
-    animation-delay: 3s;
-  }
-  .enter-button {
-    margin-top: 3rem;
-    padding: 1rem 3rem;
-    font-size: 1.2rem;
-    background: linear-gradient(to right, #e53e3e, #ed8936);
-    border: none;
-    border-radius: 50px;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeInUp 1s ease 4s forwards;
-    transition: all 0.3s ease;
-    box-shadow: 0 5px 15px rgba(229, 62, 62, 0.4);
-  }
-  .enter-button:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(229, 62, 62, 0.6);
-  }
-  @keyframes fadeInUp {
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  .pulse {
-    animation: pulse 2s infinite;
-  }
-  @keyframes pulse {
-    0% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.05);
-    }
-    100% {
-      transform: scale(1);
-    }
-  }
-  .user-menu {
-    transition: all 0.3s ease;
-    transform-origin: top right;
-  }
-  .user-menu.hidden {
-    opacity: 0;
-    transform: scale(0.95);
-    pointer-events: none;
-  }
-  .app-container {
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 0.5s ease, transform 0.5s ease;
-  }
-  .app-container.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  /* Navigation Styles */
-  .nav-container {
-    transition: all 0.3s ease;
-  }
-  
-  .nav-item {
-    transition: all 0.2s ease;
-    border-radius: 0.5rem;
-  }
-  
-  .nav-item.active {
-    background: linear-gradient(to right, #4f46e5, #9333ea);
-    color: white;
-  }
-  
-  .nav-item:hover:not(.active) {
-    background-color: #f3f4f6;
-    transform: translateX(5px);
-  }
-  
-  .page {
-    transition: opacity 0.3s ease, transform 0.3s ease;
-  }
-  
-  .page.hidden {
-    opacity: 0;
-    transform: translateX(20px);
-    pointer-events: none;
-    position: absolute;
-    width: 100%;
-  }
-  
-  .page.active {
-    opacity: 1;
-    transform: translateX(0);
-  }
-
-  /* Status Indicator */
-  .status-indicator {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    z-index: 1000;
-    padding: 8px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-  }
-  
-  .status-online {
-    background: #10b981;
-    color: white;
-  }
-  
-  .status-offline {
-    background: #ef4444;
-    color: white;
-  }
-
-  /* Debug Panel */
-  .debug-panel {
-    position: fixed;
-    bottom: 10px;
-    left: 10px;
-    background: rgba(0,0,0,0.8);
-    color: white;
-    padding: 10px;
-    border-radius: 5px;
-    font-size: 12px;
-    max-width: 300px;
-    z-index: 1000;
-  }
-
-  /* Mobile Responsive Styles */
-  @media (max-width: 768px) {
-    .countdown-title {
-      font-size: 2.5rem;
-      letter-spacing: 0.1em;
-    }
-    
-    .scary-text {
-      font-size: 1.1rem;
-      margin-bottom: 2rem;
-      padding: 0 1rem;
-    }
-    
-    .enter-button {
-      padding: 0.875rem 2rem;
-      font-size: 1rem;
-    }
-    
-    header .max-w-6xl {
-      padding-left: 1rem;
-      padding-right: 1rem;
-    }
-    
-    header h1 {
-      font-size: 1.25rem;
-    }
-    
-    main {
-      padding: 1rem;
-    }
-    
-    .text-4xl {
-      font-size: 1.75rem;
-    }
-    
-    .text-2xl {
-      font-size: 1.25rem;
-    }
-    
-    .text-xl {
-      font-size: 1.125rem;
-    }
-    
-    .p-6 {
-      padding: 1.25rem;
-    }
-    
-    .mb-8 {
-      margin-bottom: 1.5rem;
-    }
-    
-    .gap-6 {
-      gap: 1rem;
-    }
-    
-    .grid-cols-1 {
-      grid-template-columns: 1fr;
-    }
-    
-    .lg\\:grid-cols-2 {
-      grid-template-columns: 1fr;
-    }
-    
-    .md\\:grid-cols-2 {
-      grid-template-columns: 1fr;
-    }
-    
-    .md\\:grid-cols-4 {
-      grid-template-columns: 1fr;
-    }
-    
-    .lg\\:grid-cols-3 {
-      grid-template-columns: 1fr;
-    }
-    
-    #manualSubjects {
-      height: 120px;
-    }
-    
-    .timetable-day .flex.justify-between {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.5rem;
-    }
-    
-    .timetable-day .flex.items-center.space-x-2 {
-      flex-wrap: wrap;
-      gap: 0.25rem;
-    }
-    
-    .session-card {
-      padding: 0.75rem;
-    }
-    
-    .stats .grid-cols-2 {
-      grid-template-columns: 1fr 1fr;
-      gap: 0.5rem;
-    }
-    
-    .stats .p-3 {
-      padding: 0.75rem;
-    }
-    
-    .stats .text-2xl {
-      font-size: 1.5rem;
-    }
-    
-    .study-plan-generator .grid {
-      gap: 0.75rem;
-    }
-    
-    .text-right.no-print {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    
-    .text-right.no-print button {
-      width: 100%;
-    }
-    
-    #planSection .flex.justify-between {
-      flex-direction: column;
-      gap: 1rem;
-    }
-    
-    #planSection .flex.items-center.space-x-4 {
-      justify-content: space-between;
-      width: 100%;
-    }
-    
-    .week-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.5rem;
-    }
-    
-    .days-grid {
-      grid-template-columns: 1fr;
-    }
-    
-    .fixed.top-4.right-4 {
-      right: 1rem;
-      left: 1rem;
-      max-width: calc(100% - 2rem);
-    }
-    
-    /* Mobile Navigation */
-    .nav-container {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: white;
-      border-top: 1px solid #e5e7eb;
-      z-index: 40;
-      padding: 0.5rem;
-    }
-    
-    .nav-items {
-      display: flex;
-      justify-content: space-around;
-    }
-    
-    .nav-item {
-      flex-direction: column;
-      align-items: center;
-      padding: 0.5rem;
-      font-size: 0.75rem;
-    }
-    
-    .nav-item i {
-      margin-bottom: 0.25rem;
-      font-size: 1.25rem;
-    }
-    
-    .desktop-nav {
-      display: none;
-    }
-  }
-
-  @media (min-width: 769px) {
-    .mobile-nav {
-      display: none;
-    }
-    
-    .desktop-nav {
-      display: block;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .countdown-title {
-      font-size: 2rem;
-    }
-    
-    .login-card {
-      margin: 1rem;
-    }
-    
-    .stats .grid-cols-2 {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  @media print {
-    .no-print { 
-      display: none !important; 
-    }
-    body { 
-      background: white !important; 
-      color: black !important;
-    }
-    .bg-white { 
-      background: white !important; 
-      border: 1px solid #000 !important; 
-    }
-    .progress-bar {
-      -webkit-print-color-adjust: exact;
-    }
-    .timetable-day {
-      break-inside: avoid;
-    }
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Law Assessment Admin Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #F4EFE9;
+            font-family: 'Inter', sans-serif;
+            color: #1E2A32;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #0A2F3A;
+            border-bottom: 3px solid #D4AF37;
+            display: inline-block;
+            margin-bottom: 1.5rem;
+        }
+        .token-section {
+            background: #f0eae0;
+            padding: 1rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .status {
+            font-size: 0.8rem;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            background: #ddd;
+        }
+        .status.active { background: #2ecc71; color: white; }
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.3rem;
+            color: #0A2F3A;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 0.7rem;
+            border: 1px solid #ccc;
+            border-radius: 14px;
+            font-family: inherit;
+        }
+        button {
+            background: #0A2F3A;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        button:hover { background: #D4AF37; color: #0A2F3A; }
+        .message {
+            margin-top: 1rem;
+            padding: 0.8rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .test-list {
+            margin-top: 2rem;
+            border-top: 2px solid #e0d6c8;
+            padding-top: 1rem;
+        }
+        .test-item {
+            background: #faf6ef;
+            border-radius: 1rem;
+            padding: 0.8rem;
+            margin-bottom: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .test-info small { color: #6c757d; }
+        .test-actions button {
+            padding: 0.3rem 0.8rem;
+            margin-left: 0.5rem;
+            font-size: 0.8rem;
+        }
+        hr { margin: 1rem 0; }
+        .inline-help { font-size: 0.7rem; color: #5b6e8c; margin-top: 4px; }
+    </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body>
+<div class="container">
+    <h1><i class="fas fa-gavel"></i> Admin Portal – Law Assessments</h1>
+    <p style="margin-bottom: 1rem;">Manage <strong>Civil, Corporate, Land, Criminal, Family Law</strong> test papers. Changes are synced to <code>https://www.ldclionhunter.com/IndividualAssessment.html</code>.</p>
 
-<!-- Status Indicator -->
-<div id="statusIndicator" class="status-indicator status-offline hidden">
-  <i class="fas fa-wifi mr-1"></i>
-  <span>Offline</span>
-</div>
-
-<!-- Debug Panel -->
-<div id="debugPanel" class="debug-panel hidden">
-  <div><strong>Debug Info</strong></div>
-  <div id="debugStatus">Status: Unknown</div>
-  <div id="debugError">No errors</div>
-</div>
-
-<!-- Login Screen -->
-<div id="loginScreen" class="login-container">
-  <div id="loginCard" class="login-card w-full max-w-md p-8 mx-4">
-    <div class="text-center mb-8">
-      <h1 class="text-3xl font-bold text-indigo-700 mb-2"><i class="fas fa-book mr-2"></i>THE COUNTDOWN</h1>
-      <p class="text-gray-600">Your Ultimate LDC 2025 Study Planner</p>
-    </div>
-    
-    <div id="loginForm">
-      <h2 class="text-xl font-semibold text-center mb-6">Welcome Back!</h2>
-      
-      <div class="mb-4">
-        <label class="block text-gray-700 text-sm font-medium mb-2" for="loginEmail">Email</label>
-        <input id="loginEmail" type="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="your@email.com">
-      </div>
-      
-      <div class="mb-6">
-        <label class="block text-gray-700 text-sm font-medium mb-2" for="loginPassword">Password</label>
-        <input id="loginPassword" type="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
-      </div>
-      
-      <button id="loginBtn" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors mb-4">
-        Sign In
-      </button>
-      
-      <div class="text-center">
-        <button id="showRegister" class="text-indigo-600 hover:text-indigo-800 text-sm">
-          Don't have an account? Sign up
-        </button>
-      </div>
-    </div>
-    
-    <div id="registerForm" class="hidden">
-      <h2 class="text-xl font-semibold text-center mb-6">Create Account</h2>
-      
-      <div class="mb-4">
-        <label class="block text-gray-700 text-sm font-medium mb-2" for="registerName">Full Name</label>
-        <input id="registerName" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="John Doe">
-      </div>
-      
-      <div class="mb-4">
-        <label class="block text-gray-700 text-sm font-medium mb-2" for="registerEmail">Email</label>
-        <input id="registerEmail" type="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="your@email.com">
-      </div>
-      
-      <div class="mb-6">
-        <label class="block text-gray-700 text-sm font-medium mb-2" for="registerPassword">Password</label>
-        <input id="registerPassword" type="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
-      </div>
-      
-      <button id="registerBtn" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors mb-4">
-        Create Account
-      </button>
-      
-      <div class="text-center">
-        <button id="showLogin" class="text-indigo-600 hover:text-indigo-800 text-sm">
-          Already have an account? Sign in
-        </button>
-      </div>
-    </div>
-    
-    <div class="mt-6 text-center text-xs text-gray-500">
-      By continuing, you agree to our Terms of Service and Privacy Policy
-    </div>
-  </div>
-</div>
-
-<!-- Countdown Screen -->
-<div id="countdownScreen" class="countdown-container hidden">
-  <h1 class="countdown-title pulse">COUNTDOWN</h1>
-  <p class="scary-text">⏳ Time is slipping through your fingers...</p>
-  <p class="scary-text">🔥 Every moment you waste brings failure closer</p>
-  <p class="scary-text">😱 The exams are coming whether you're ready or not</p>
-  <p class="scary-text">💀 Only the prepared will survive this challenge</p>
-  <button id="enterAppBtn" class="enter-button">
-    ENTER IF YOU DARE <i class="fas fa-arrow-right ml-2"></i>
-  </button>
-</div>
-
-<!-- Main Application -->
-<div id="appContainer" class="app-container hidden">
-
-<!-- Header -->
-<header class="bg-gradient-to-r from-indigo-700 to-purple-700 text-white py-4 shadow-md">
-  <div class="max-w-6xl mx-auto px-6 flex justify-between items-center">
-    <div>
-      <h1 class="text-2xl font-extrabold"><i class="fas fa-book mr-2"></i>THE COUNTDOWN</h1>
-      <p class="text-xs opacity-90">LDC Study Planner</p>
-    </div>
-    
-    <!-- User Menu -->
-    <div class="relative">
-      <button id="userMenuBtn" class="flex items-center space-x-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors">
-        <i class="fas fa-user-circle"></i>
-        <span id="userName" class="font-medium">User</span>
-        <i class="fas fa-chevron-down text-xs"></i>
-      </button>
-      
-      <div id="userMenu" class="user-menu hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-10 border border-gray-200">
-        <div class="px-4 py-2 border-b border-gray-100">
-          <p class="text-sm font-medium text-gray-900" id="menuUserName">User Name</p>
-          <p class="text-xs text-gray-500 truncate" id="menuUserEmail">user@example.com</p>
-        </div>
-        <button id="logoutBtn" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
-          <i class="fas fa-sign-out-alt mr-2"></i>Sign Out
-        </button>
-      </div>
-    </div>
-  </div>
-</header>
-
-<!-- Desktop Navigation -->
-<nav class="desktop-nav bg-white shadow-sm border-b no-print">
-  <div class="max-w-6xl mx-auto">
-    <div class="flex space-x-1 p-4">
-      <button class="nav-item active px-4 py-2 flex items-center space-x-2" data-page="dashboard">
-        <i class="fas fa-tachometer-alt"></i>
-        <span>Dashboard</span>
-      </button>
-      <button class="nav-item px-4 py-2 flex items-center space-x-2" data-page="study-plan">
-        <i class="fas fa-calendar-plus"></i>
-        <span>Study Plan</span>
-      </button>
-      <button class="nav-item px-4 py-2 flex items-center space-x-2" data-page="subjects">
-        <i class="fas fa-book-open"></i>
-        <span>Subjects</span>
-      </button>
-      <button class="nav-item px-4 py-2 flex items-center space-x-2" data-page="account">
-        <i class="fas fa-user-cog"></i>
-        <span>Account</span>
-      </button>
-    </div>
-  </div>
-</nav>
-
-<!-- Mobile Navigation -->
-<nav class="mobile-nav nav-container no-print">
-  <div class="nav-items">
-    <button class="nav-item active flex items-center" data-page="dashboard">
-      <i class="fas fa-tachometer-alt"></i>
-      <span>Dashboard</span>
-    </button>
-    <button class="nav-item flex items-center" data-page="study-plan">
-      <i class="fas fa-calendar-plus"></i>
-      <span>Study Plan</span>
-    </button>
-    <button class="nav-item flex items-center" data-page="subjects">
-      <i class="fas fa-book-open"></i>
-      <span>Subjects</span>
-    </button>
-    <button class="nav-item flex items-center" data-page="account">
-      <i class="fas fa-user-cog"></i>
-      <span>Account</span>
-    </button>
-  </div>
-</nav>
-
-<!-- Dark Mode Toggle -->
-<div class="text-right max-w-6xl mx-auto p-4 no-print">
-  <button id="toggleDark" class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors">
-    <i class="fas fa-moon mr-2"></i>Toggle Dark Mode
-  </button>
-</div>
-
-<main class="flex-1 max-w-6xl mx-auto p-6 relative">
-
-  <!-- Dashboard Page -->
-  <div id="dashboard-page" class="page active">
-    <!-- Countdown -->
-    <section class="mb-8 text-center bg-gradient-to-br from-white to-indigo-50 rounded-2xl shadow-md p-6 border border-indigo-100">
-      <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2"><i class="fas fa-clock mr-2"></i>Time Remaining</h2>
-      <div id="countdown" class="text-4xl font-bold text-red-600 mb-1"></div>
-      <p id="scareText" class="text-gray-600 italic"></p>
-    </section>
-
-    <!-- Overall Progress & Statistics -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-      <!-- Overall Progress -->
-      <section class="bg-white rounded-2xl shadow-md p-6">
-        <h2 class="text-xl font-semibold text-indigo-700 mb-4"><i class="fas fa-chart-line mr-2"></i>Overall Progress</h2>
-        <div class="progress-bar mb-2">
-          <div id="progressBar" class="progress-inner" style="width:0%;"></div>
-        </div>
-        <p id="progressText" class="text-sm text-gray-600 text-right">0% Completed</p>
-      </section>
-
-      <!-- Study Statistics -->
-      <section class="bg-white rounded-2xl shadow-md p-6">
-        <h2 class="text-xl font-semibold text-indigo-700 mb-4"><i class="fas fa-chart-pie mr-2"></i>Study Statistics</h2>
-        <div id="stats" class="grid grid-cols-2 gap-4 text-center">
-          <!-- Stats will be populated here -->
-        </div>
-      </section>
-    </div>
-
-    <!-- Quick Actions -->
-    <section class="bg-white rounded-2xl shadow-md p-6 mb-8">
-      <h2 class="text-xl font-semibold text-indigo-700 mb-4"><i class="fas fa-bolt mr-2"></i>Quick Actions</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <button class="p-4 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors flex items-center justify-center flex-col" data-page="study-plan">
-          <i class="fas fa-calendar-plus text-2xl text-indigo-600 mb-2"></i>
-          <span class="font-semibold text-indigo-700">Create Study Plan</span>
-        </button>
-        <button class="p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors flex items-center justify-center flex-col" data-page="subjects">
-          <i class="fas fa-book-open text-2xl text-green-600 mb-2"></i>
-          <span class="font-semibold text-green-700">Manage Subjects</span>
-        </button>
-        <button class="p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors flex items-center justify-center flex-col" onclick="window.print()">
-          <i class="fas fa-print text-2xl text-purple-600 mb-2"></i>
-          <span class="font-semibold text-purple-700">Print Schedule</span>
-        </button>
-      </div>
-    </section>
-
-    <!-- Recent Activity -->
-    <section class="bg-white rounded-2xl shadow-md p-6">
-      <h2 class="text-xl font-semibold text-indigo-700 mb-4"><i class="fas fa-history mr-2"></i>Recent Activity</h2>
-      <div id="recentActivity" class="text-gray-600">
-        <p class="text-center py-4">No recent activity yet. Start by creating your study plan!</p>
-      </div>
-    </section>
-  </div>
-
-  <!-- Study Plan Page -->
-  <div id="study-plan-page" class="page hidden">
-    <!-- Study Plan Generator -->
-    <section class="bg-white p-6 rounded-2xl shadow-md mb-8">
-      <h2 class="text-xl font-semibold text-indigo-700 mb-4"><i class="fas fa-calendar-plus mr-2"></i>Study Plan Generator</h2>
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-        <label class="block">
-          <span class="text-sm text-gray-600">Select Date</span>
-          <input id="manualDate" type="date" class="mt-1 w-full border rounded-lg px-3 py-2"/>
-        </label>
-        <label class="block">
-          <span class="text-sm text-gray-600">Study Duration (hours)</span>
-          <input id="studyDuration" type="number" min="0.5" max="8" step="0.5" value="2" 
-                 class="mt-1 w-full border rounded-lg px-3 py-2"/>
-        </label>
-        <label class="block">
-          <span class="text-sm text-gray-600">Select Subjects</span>
-          <select id="manualSubjects" multiple class="mt-1 w-full border rounded-lg px-3 py-2 h-32"></select>
-        </label>
-        <div class="flex items-end">
-          <button id="addToPlan" class="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 w-full transition-colors">
-            <i class="fas fa-plus mr-2"></i>Add to Plan
-          </button>
-        </div>
-      </div>
-      <div class="text-right no-print">
-        <button id="printBtn" class="px-5 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
-          <i class="fas fa-print mr-2"></i>Print / Save PDF
-        </button>
-        <button id="clearPlanBtn" class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors ml-2">
-          <i class="fas fa-trash mr-2"></i>Clear Plan
-        </button>
-      </div>
-    </section>
-
-    <!-- Generated Plan -->
-    <section id="planSection" class="bg-white rounded-2xl shadow-md p-6 hidden">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-semibold text-indigo-700"><i class="fas fa-calendar-alt mr-2"></i>Your Study Schedule</h2>
-        <div class="flex items-center space-x-4">
-          <span id="planStats" class="text-sm text-gray-500"></span>
-          <button id="toggleView" class="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-sm hover:bg-indigo-200 transition-colors">
-            <i class="fas fa-th-large mr-1"></i>Toggle View
-          </button>
-        </div>
-      </div>
-      
-      <!-- Timetable View -->
-      <div id="timetableView" class="space-y-6">
-        <!-- Timetable will be populated here -->
-      </div>
-      
-      <!-- List View (Hidden by default) -->
-      <div id="listView" class="hidden space-y-4">
-        <!-- List view will be populated here -->
-      </div>
-    </section>
-  </div>
-
-  <!-- Subjects Page -->
-  <div id="subjects-page" class="page hidden">
-    <section class="bg-white rounded-2xl shadow-md p-6 mb-8">
-      <h2 class="text-xl font-semibold text-indigo-700 mb-4"><i class="fas fa-book-open mr-2"></i>Study Subjects</h2>
-      <p class="text-gray-600 mb-6">Track your progress by marking subjects as completed. Your progress will be saved automatically.</p>
-      
-      <!-- Units -->
-      <section id="unitsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></section>
-    </section>
-  </div>
-
-  <!-- Account Page -->
-  <div id="account-page" class="page hidden">
-    <section class="bg-white rounded-2xl shadow-md p-6 mb-8">
-      <h2 class="text-xl font-semibold text-indigo-700 mb-6"><i class="fas fa-user-cog mr-2"></i>Account Settings</h2>
-      
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Profile Information -->
+    <div class="token-section">
+        <div><i class="fab fa-github"></i> <strong>hunter9201/I</strong></div>
         <div>
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">Profile Information</h3>
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-              <input type="text" id="accountName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Your full name">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-              <input type="email" id="accountEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="your@email.com">
-            </div>
-            <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
-              Update Profile
-            </button>
-          </div>
+            <span id="tokenStatus" class="status">⚠️ No token</span>
+            <button id="setTokenBtn" style="margin-left: 0.5rem;"><i class="fas fa-key"></i> Set Token</button>
         </div>
-        
-        <!-- Account Actions -->
-        <div>
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">Account Actions</h3>
-          <div class="space-y-4">
-            <button class="w-full px-4 py-3 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors text-left flex items-center justify-between">
-              <span>Delete All Data</span>
-              <i class="fas fa-trash"></i>
-            </button>
-            <button class="w-full px-4 py-3 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-left flex items-center justify-between">
-              <span>Export Data</span>
-              <i class="fas fa-download"></i>
-            </button>
-            <button id="logoutBtnAccount" class="w-full px-4 py-3 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors text-left flex items-center justify-between">
-              <span>Sign Out</span>
-              <i class="fas fa-sign-out-alt"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-    
-    <!-- Study Statistics -->
-    <section class="bg-white rounded-2xl shadow-md p-6">
-      <h2 class="text-xl font-semibold text-indigo-700 mb-4">Your Study Statistics</h2>
-      <div id="accountStats" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-        <!-- Stats will be populated here -->
-      </div>
-    </section>
-  </div>
+    </div>
 
-</main>
+    <div id="adminMsg"></div>
 
-<footer class="text-center text-gray-500 text-sm py-4 border-t no-print">
-  &copy; 2025 THE COUNTDOWN | LDC Study Planner
-</footer>
+    <div class="form-group">
+        <label>Test Code *</label>
+        <input id="testCode" placeholder="e.g., CIV-2025-01, CORP-M&A-02">
+    </div>
+    <div class="form-group">
+        <label>Full Test Name *</label>
+        <input id="testName" placeholder="e.g., Civil Procedure – Interim Applications">
+    </div>
+    <div class="form-group">
+        <label>Legal Subject *</label>
+        <select id="testSubject">
+            <option value="Civil Law">Civil Law</option>
+            <option value="Corporate Law">Corporate Law</option>
+            <option value="Land Law">Land Law</option>
+            <option value="Criminal Law">Criminal Law</option>
+            <option value="Family Law">Family Law</option>
+            <option value="Other">Other</option>
+        </select>
+    </div>
+    <div class="form-group" id="customSubjectGroup" style="display:none;">
+        <label>Custom Subject Name</label>
+        <input id="customSubjectInput" placeholder="e.g., International Law">
+    </div>
+    <div class="form-group">
+        <label>Description / Topics</label>
+        <textarea id="testDesc" rows="2" placeholder="Key areas assessed, case law references, difficulty..."></textarea>
+    </div>
+    <div class="form-group">
+        <label>Question Paper PDF</label>
+        <input type="file" id="testPdf" accept=".pdf">
+        <div class="inline-help">Upload PDF for new test; leave empty to keep existing file when editing.</div>
+    </div>
 
-</div> <!-- End of appContainer -->
+    <button id="saveBtn"><i class="fas fa-upload"></i> Save / Update Test</button>
+    <button id="cancelEditBtn" style="background:#8B3A3A; margin-left: 0.5rem;"><i class="fas fa-times"></i> Cancel Edit</button>
+
+    <div class="test-list">
+        <h3>Existing Law Assessments</h3>
+        <div id="testListContainer">Loading...</div>
+    </div>
+</div>
 
 <script>
-// === BACKEND CONFIGURATION ===
-const API_BASE = 'https://down-backend.onrender.com/api';
+    // ========== CONFIGURATION ==========
+    const REPO_OWNER = "hunter9201";
+    const REPO_NAME = "I";
+    const BRANCH = "main";
+    const JSON_PATH = "tests.json";
+    const PDF_FOLDER = "tests_pdfs/";
 
-// Debug mode
-const DEBUG = true;
+    let githubToken = localStorage.getItem("test_gh_token") || "";
+    let allTests = [];
+    let editingId = null;
 
-function debugLog(message, data = null) {
-  if (DEBUG) {
-    console.log(`[DEBUG] ${message}`, data || '');
-    updateDebugPanel(message, data);
-  }
-}
-
-function updateDebugPanel(message, data = null) {
-  const debugPanel = document.getElementById('debugPanel');
-  const debugStatus = document.getElementById('debugStatus');
-  
-  if (debugPanel && debugStatus) {
-    debugPanel.classList.remove('hidden');
-    debugStatus.textContent = `Status: ${message}`;
-    
-    if (data) {
-      const debugError = document.getElementById('debugError');
-      if (debugError) {
-        debugError.textContent = `Data: ${JSON.stringify(data).substring(0, 100)}`;
-      }
+    // GitHub API helpers
+    function ghHeaders() {
+        const headers = { "Accept": "application/vnd.github+json" };
+        if (githubToken) headers["Authorization"] = "Bearer " + githubToken;
+        return headers;
     }
-  }
-}
 
-// Set dates dynamically
-const currentYear = new Date().getFullYear();
-const startTime = new Date(`${currentYear}-10-14T18:18:00`);
-const deadline = new Date(`${currentYear}-12-07T23:59:59`);
-
-const scareSayings = [
-  "⏳ Time is slipping away!",
-  "🔥 Every second counts!",
-  "😱 Your exams are almost here!",
-  "💼 Only the prepared will pass!",
-  "⚖️ Justice favors the diligent!",
-  "🚨 Wake up, Counsel! The clock is ticking!",
-  "📖 Read now — rest later!",
-  "🎯 Focus is your superpower!",
-  "💪 Consistency beats intensity!",
-  "🧠 Knowledge is your best weapon!"
-];
-
-const alertAudio = new Audio("https://www.soundjay.com/button/beep-07.mp3");
-
-const units = [
-  { 
-    title: "Civil Proceedings", 
-    subjects: ["Pleadings", "Interlocutory Applications", "Trials", "Judgment & Appeals", "Execution of Decrees"],
-    color: "from-blue-500 to-cyan-500",
-    borderColor: "border-l-blue-500"
-  },
-  { 
-    title: "Criminal Proceedings", 
-    subjects: ["Jurisdiction", "Charge & Information", "Bail & Remand", "Trial Process", "Sentencing & Appeals"],
-    color: "from-red-500 to-pink-500",
-    borderColor: "border-l-red-500"
-  },
-  { 
-    title: "Family Law Practice", 
-    subjects: ["Marriage & Divorce", "Custody & Maintenance", "Adoption & Guardianship", "Matrimonial Property", "Domestic Violence"],
-    color: "from-green-500 to-emerald-500",
-    borderColor: "border-l-green-500"
-  },
-  { 
-    title: "Corporate & Commercial Practice", 
-    subjects: ["Company Formation", "Contracts", "Insolvency", "Mergers & Acquisitions", "Taxation"],
-    color: "from-purple-500 to-indigo-500",
-    borderColor: "border-l-purple-500"
-  },
-  { 
-    title: "Land Practice", 
-    subjects: ["Land Registration", "Conveyancing", "Mortgages", "Leases", "Dispute Resolution"],
-    color: "from-amber-500 to-orange-500",
-    borderColor: "border-l-amber-500"
-  }
-];
-
-let studyPlan = [];
-let isTimetableView = true;
-let currentUser = null;
-let currentPage = 'dashboard';
-let backendOnline = false;
-
-// === BACKEND FUNCTIONS ===
-async function checkBackendStatus() {
-  try {
-    debugLog('Checking backend status...');
-    const response = await fetch(API_BASE + '/health', {
-      method: 'GET',
-      mode: 'cors',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    async function ghGetContents(path) {
+        const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${encodeURIComponent(path)}?ref=${BRANCH}`;
+        const res = await fetch(url, { headers: ghHeaders() });
+        if (res.status === 404) return null;
+        if (!res.ok) throw new Error(`GET failed: ${res.status}`);
+        return await res.json();
     }
-    
-    const data = await response.json();
-    backendOnline = true;
-    
-    document.getElementById('statusIndicator').classList.remove('status-offline', 'hidden');
-    document.getElementById('statusIndicator').classList.add('status-online');
-    document.getElementById('statusIndicator').innerHTML = '<i class="fas fa-wifi mr-1"></i><span>Online</span>';
-    
-    debugLog('✅ Backend connected:', data);
-    return true;
-  } catch (error) {
-    backendOnline = false;
-    document.getElementById('statusIndicator').classList.remove('status-online', 'hidden');
-    document.getElementById('statusIndicator').classList.add('status-offline');
-    document.getElementById('statusIndicator').innerHTML = '<i class="fas fa-wifi mr-1"></i><span>Offline</span>';
-    
-    debugLog('❌ Backend offline:', error.message);
-    return false;
-  }
-}
 
-async function registerUser(name, email, password) {
-  debugLog('Registering user...', { name, email, password: '***' });
-  
-  if (!backendOnline) {
-    debugLog('Using localStorage fallback for registration');
-    const users = getUsers();
-    if (users[email]) {
-      return { success: false, error: 'User already exists' };
+    async function ghPutContents(path, contentBase64, message, sha = null) {
+        const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${encodeURIComponent(path)}`;
+        const body = { message, content: contentBase64, branch: BRANCH };
+        if (sha) body.sha = sha;
+        const res = await fetch(url, { method: "PUT", headers: { ...ghHeaders(), "Content-Type": "application/json" }, body: JSON.stringify(body) });
+        if (!res.ok) throw new Error(`PUT failed: ${res.status}`);
+        return res.json();
     }
-    
-    users[email] = {
-      name: name,
-      password: password,
-      studyPlan: [],
-      progress: {},
-      createdAt: new Date().toISOString()
-    };
-    saveUsers(users);
-    
-    return { 
-      success: true, 
-      student: { id: email, username: email, email: email, full_name: name }
-    };
-  }
-  
-  try {
-    debugLog('Sending registration request to backend...');
-    const response = await fetch(API_BASE + '/register', {
-      method: 'POST',
-      mode: 'cors',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({ 
-        username: email, 
-        password: password, 
-        email: email, 
-        full_name: name 
-      })
-    });
-    
-    const responseText = await response.text();
-    debugLog('Registration response raw:', responseText);
-    
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (e) {
-      debugLog('Failed to parse JSON response:', responseText);
-      return { success: false, error: 'Invalid response from server' };
+
+    async function uploadPDF(file, filename) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = async () => {
+                const binary = reader.result;
+                const base64 = btoa(new Uint8Array(binary).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+                let sha = null;
+                try {
+                    const existing = await ghGetContents(PDF_FOLDER + filename);
+                    if (existing && existing.sha) sha = existing.sha;
+                } catch(e) {}
+                await ghPutContents(PDF_FOLDER + filename, base64, `Upload law assessment PDF: ${filename}`, sha);
+                resolve();
+            };
+            reader.onerror = reject;
+            reader.readAsArrayBuffer(file);
+        });
     }
-    
-    debugLog('Register response:', data);
-    return data;
-  } catch (error) {
-    debugLog('Register network error:', error);
-    return { success: false, error: 'Network error. Please try again.' };
-  }
-}
 
-async function loginUser(email, password) {
-  debugLog('Logging in user...', { email, password: '***' });
-  
-  if (!backendOnline) {
-    debugLog('Using localStorage fallback for login');
-    const users = getUsers();
-    const user = users[email];
-    
-    if (user && user.password === password) {
-      return {
-        success: true,
-        student: { id: email, username: email, email: email, full_name: user.name },
-        progress: user.progress || {},
-        studyPlan: user.studyPlan || []
-      };
-    } else {
-      return { success: false, error: 'Invalid credentials' };
+    function toBase64(str) { return btoa(unescape(encodeURIComponent(str))); }
+    function fromBase64(b64) { return decodeURIComponent(escape(atob(b64))); }
+
+    async function loadTests() {
+        try {
+            const data = await ghGetContents(JSON_PATH);
+            if (data && data.content) {
+                allTests = JSON.parse(fromBase64(data.content));
+            } else {
+                allTests = [];
+            }
+            renderTestList();
+        } catch (err) {
+            showMessage("Error loading tests: " + err.message, "error");
+        }
     }
-  }
-  
-  try {
-    debugLog('Sending login request to backend...');
-    const response = await fetch(API_BASE + '/login', {
-      method: 'POST',
-      mode: 'cors',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({ username: email, password: password })
-    });
-    
-    const responseText = await response.text();
-    debugLog('Login response raw:', responseText);
-    
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (e) {
-      debugLog('Failed to parse JSON response:', responseText);
-      return { success: false, error: 'Invalid response from server' };
+
+    async function saveTestsToGitHub(testsArray, commitMsg) {
+        const existing = await ghGetContents(JSON_PATH);
+        const sha = existing ? existing.sha : null;
+        const contentBase64 = toBase64(JSON.stringify(testsArray, null, 2));
+        await ghPutContents(JSON_PATH, contentBase64, commitMsg, sha);
+        allTests = testsArray;
     }
-    
-    debugLog('Login response:', data);
-    return data;
-  } catch (error) {
-    debugLog('Login network error:', error);
-    return { success: false, error: 'Network error. Please check your connection.' };
-  }
-}
 
-async function saveUserData(studentId, progress, studyPlan) {
-  if (!backendOnline || !currentUser) return { success: true };
-  
-  try {
-    const response = await fetch(API_BASE + '/save-data', {
-      method: 'POST',
-      mode: 'cors',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-      },
-      body: JSON.stringify({ 
-        studentId: studentId, 
-        progress: progress, 
-        studyPlan: studyPlan 
-      })
-    });
-    return await response.json();
-  } catch (error) {
-    return { success: false, error: 'Network error' };
-  }
-}
-
-// === LOCALSTORAGE FALLBACK FUNCTIONS ===
-function getUsers() {
-  const users = localStorage.getItem('ldcUsers');
-  return users ? JSON.parse(users) : {};
-}
-
-function saveUsers(users) {
-  localStorage.setItem('ldcUsers', JSON.stringify(users));
-}
-
-function getCurrentUserData() {
-  if (!currentUser) return null;
-  
-  if (!backendOnline) {
-    const users = getUsers();
-    return users[currentUser] || null;
-  }
-  
-  return null;
-}
-
-function saveCurrentUserData(userData) {
-  if (!currentUser) return;
-  
-  if (!backendOnline) {
-    const users = getUsers();
-    users[currentUser] = userData;
-    saveUsers(users);
-  } else {
-    saveUserData(currentUser, userData.progress, userData.studyPlan);
-  }
-}
-
-// Navigation functions
-function navigateTo(page) {
-  document.querySelectorAll('.nav-item').forEach(item => {
-    item.classList.remove('active');
-  });
-  
-  document.querySelectorAll(`[data-page="${page}"]`).forEach(item => {
-    item.classList.add('active');
-  });
-  
-  document.querySelectorAll('.page').forEach(pageEl => {
-    pageEl.classList.remove('active');
-    pageEl.classList.add('hidden');
-  });
-  
-  setTimeout(() => {
-    const targetPage = document.getElementById(`${page}-page`);
-    targetPage.classList.remove('hidden');
-    setTimeout(() => {
-      targetPage.classList.add('active');
-    }, 50);
-  }, 300);
-  
-  currentPage = page;
-  
-  if (page === 'dashboard') {
-    updateDashboard();
-  } else if (page === 'account') {
-    updateAccountPage();
-  }
-}
-
-function updateDashboard() {
-  const userData = getCurrentUserData();
-  const recentActivity = document.getElementById('recentActivity');
-  
-  if (userData && userData.studyPlan && userData.studyPlan.length > 0) {
-    const latestPlan = userData.studyPlan[userData.studyPlan.length - 1];
-    recentActivity.innerHTML = `
-      <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-        <div class="flex items-center">
-          <i class="fas fa-calendar-check text-green-500 mr-3"></i>
-          <div>
-            <p class="font-semibold text-green-800">Latest Study Session Added</p>
-            <p class="text-sm text-green-600">${formatDate(latestPlan.date)} - ${latestPlan.sessions.length} subjects</p>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-}
-
-function updateAccountPage() {
-  const userData = getCurrentUserData();
-  if (userData) {
-    document.getElementById('accountName').value = userData.name || '';
-    document.getElementById('accountEmail').value = currentUser || '';
-    
-    const total = units.reduce((sum, u) => sum + u.subjects.length, 0);
-    const userProgress = userData.progress || {};
-    const done = units.flatMap((u, i) => 
-      u.subjects.map((_, j) => userProgress[`unit${i}_subject${j}`] === true)
-    ).filter(x => x).length;
-    
-    const remaining = total - done;
-    const totalSessions = (userData.studyPlan || []).reduce((sum, day) => sum + day.sessions.length, 0);
-    const totalHours = (userData.studyPlan || []).reduce((sum, day) => sum + (day.sessions.length * parseFloat(day.duration || 2)), 0);
-    
-    document.getElementById('accountStats').innerHTML = `
-      <div class="p-3 bg-blue-50 rounded-lg">
-        <div class="text-2xl font-bold text-blue-600">${done}</div>
-        <div class="text-sm text-blue-800">Completed</div>
-      </div>
-      <div class="p-3 bg-green-50 rounded-lg">
-        <div class="text-2xl font-bold text-green-600">${remaining}</div>
-        <div class="text-sm text-green-800">Remaining</div>
-      </div>
-      <div class="p-3 bg-purple-50 rounded-lg">
-        <div class="text-2xl font-bold text-purple-600">${totalSessions}</div>
-        <div class="text-sm text-purple-800">Sessions</div>
-      </div>
-      <div class="p-3 bg-orange-50 rounded-lg">
-        <div class="text-2xl font-bold text-orange-600">${totalHours}h</div>
-        <div class="text-sm text-orange-800">Total Hours</div>
-      </div>
-    `;
-  }
-}
-
-// Initialize the app
-async function init() {
-  debugLog('Initializing application...');
-  await checkBackendStatus();
-  
-  const savedUser = localStorage.getItem('currentUser');
-  if (savedUser) {
-    currentUser = savedUser;
-    showCountdownScreen();
-  } else {
-    showLoginScreen();
-  }
-  
-  document.getElementById("loginBtn").addEventListener("click", handleLogin);
-  document.getElementById("registerBtn").addEventListener("click", handleRegister);
-  document.getElementById("showRegister").addEventListener("click", showRegisterForm);
-  document.getElementById("showLogin").addEventListener("click", showLoginForm);
-  document.getElementById("enterAppBtn").addEventListener("click", showAppScreen);
-  document.getElementById("userMenuBtn").addEventListener("click", toggleUserMenu);
-  document.getElementById("logoutBtn").addEventListener("click", handleLogout);
-  document.getElementById("logoutBtnAccount").addEventListener("click", handleLogout);
-  
-  document.querySelectorAll('.nav-item').forEach(item => {
-    item.addEventListener('click', function() {
-      const page = this.getAttribute('data-page');
-      navigateTo(page);
-    });
-  });
-  
-  document.querySelectorAll('[data-page]').forEach(button => {
-    if (button.classList.contains('nav-item')) return;
-    button.addEventListener('click', function() {
-      const page = this.getAttribute('data-page');
-      navigateTo(page);
-    });
-  });
-  
-  document.addEventListener('click', (e) => {
-    const userMenu = document.getElementById('userMenu');
-    const userMenuBtn = document.getElementById('userMenuBtn');
-    if (userMenu && userMenuBtn && !userMenu.contains(e.target) && !userMenuBtn.contains(e.target)) {
-      userMenu.classList.add('hidden');
+    function renderTestList() {
+        const container = document.getElementById('testListContainer');
+        if (!allTests.length) {
+            container.innerHTML = '<p>No tests yet. Add your first law assessment above.</p>';
+            return;
+        }
+        container.innerHTML = '';
+        allTests.forEach(t => {
+            const div = document.createElement('div');
+            div.className = 'test-item';
+            div.innerHTML = `
+                <div class="test-info">
+                    <strong>${escapeHtml(t.testCode)}</strong> — ${escapeHtml(t.testName)}<br>
+                    <small>Subject: ${escapeHtml(t.subject)} | PDF: ${t.pdfFile}</small>
+                </div>
+                <div class="test-actions">
+                    <button onclick="editTest(${t.id})">✏️ Edit</button>
+                    <button onclick="deleteTest(${t.id})" style="background:#8B3A3A;">🗑️ Delete</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
     }
-  });
-  
-  // Enter key support
-  document.getElementById('loginEmail').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') handleLogin();
-  });
-  document.getElementById('loginPassword').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') handleLogin();
-  });
-  document.getElementById('registerName').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') handleRegister();
-  });
-  document.getElementById('registerEmail').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') handleRegister();
-  });
-  document.getElementById('registerPassword').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') handleRegister();
-  });
-  
-  setInterval(async () => {
-    if (currentUser) {
-      const userData = getCurrentUserData();
-      if (userData) {
-        await saveUserData(currentUser, userData.progress, userData.studyPlan);
-      }
-    }
-  }, 120000);
-}
 
-function showLoginScreen() {
-  document.getElementById('loginScreen').classList.remove('hidden');
-  document.getElementById('loginCard').classList.remove('hidden');
-  document.getElementById('countdownScreen').classList.add('hidden');
-  document.getElementById('appContainer').classList.add('hidden');
-  
-  document.getElementById('loginEmail').value = '';
-  document.getElementById('loginPassword').value = '';
-  document.getElementById('registerName').value = '';
-  document.getElementById('registerEmail').value = '';
-  document.getElementById('registerPassword').value = '';
-  
-  showLoginForm();
-}
-
-function showCountdownScreen() {
-  document.getElementById('loginScreen').classList.add('hidden');
-  setTimeout(() => {
-    document.getElementById('countdownScreen').classList.remove('hidden');
-  }, 500);
-}
-
-function showAppScreen() {
-  document.getElementById('countdownScreen').classList.add('hidden');
-  setTimeout(() => {
-    document.getElementById('appContainer').classList.remove('hidden');
-    document.getElementById('appContainer').classList.add('visible');
-    
-    const userData = getCurrentUserData();
-    if (userData) {
-      document.getElementById('userName').textContent = userData.name;
-      document.getElementById('menuUserName').textContent = userData.name;
-      document.getElementById('menuUserEmail').textContent = currentUser;
-      
-      studyPlan = userData.studyPlan || [];
-      initializeApp();
-    }
-  }, 800);
-}
-
-function initializeApp() {
-  document.getElementById("manualDate").valueAsDate = new Date();
-  
-  populateSubjects();
-  renderUnits();
-  updateProgress();
-  updateCountdown();
-  renderStudyPlan();
-  updateStatistics();
-  updateDashboard();
-  
-  document.getElementById("addToPlan").addEventListener("click", addToPlan);
-  document.getElementById("printBtn").addEventListener("click", () => window.print());
-  document.getElementById("clearPlanBtn").addEventListener("click", clearStudyPlan);
-  document.getElementById("toggleDark").addEventListener("click", toggleDarkMode);
-  document.getElementById("toggleView").addEventListener("click", toggleView);
-  
-  setInterval(updateCountdown, 1000);
-}
-
-function showLoginForm() {
-  document.getElementById('loginForm').classList.remove('hidden');
-  document.getElementById('registerForm').classList.add('hidden');
-  removeAuthErrors();
-}
-
-function showRegisterForm() {
-  document.getElementById('loginForm').classList.add('hidden');
-  document.getElementById('registerForm').classList.remove('hidden');
-  removeAuthErrors();
-}
-
-async function handleLogin() {
-  const email = document.getElementById('loginEmail').value;
-  const password = document.getElementById('loginPassword').value;
-  
-  if (!email || !password) {
-    showAuthError('Please enter both email and password', 'loginForm');
-    return;
-  }
-  
-  const loginBtn = document.getElementById('loginBtn');
-  loginBtn.textContent = 'Signing in...';
-  loginBtn.disabled = true;
-  
-  const result = await loginUser(email, password);
-  
-  if (result.success) {
-    currentUser = email;
-    localStorage.setItem('currentUser', email);
-    
-    if (result.token) {
-      localStorage.setItem('token', result.token);
-    }
-    
-    if (!backendOnline) {
-      const users = getUsers();
-      users[email] = {
-        name: result.student.full_name,
-        password: password,
-        studyPlan: result.studyPlan || [],
-        progress: result.progress || {},
-        createdAt: new Date().toISOString()
-      };
-      saveUsers(users);
-    }
-    
-    showCountdownScreen();
-  } else {
-    showAuthError(result.error, 'loginForm');
-  }
-  
-  loginBtn.textContent = 'Sign In';
-  loginBtn.disabled = false;
-}
-
-async function handleRegister() {
-  const name = document.getElementById('registerName').value;
-  const email = document.getElementById('registerEmail').value;
-  const password = document.getElementById('registerPassword').value;
-  
-  if (!name || !email || !password) {
-    showAuthError('Please fill in all fields', 'registerForm');
-    return;
-  }
-  
-  if (password.length < 6) {
-    showAuthError('Password must be at least 6 characters long', 'registerForm');
-    return;
-  }
-  
-  const registerBtn = document.getElementById('registerBtn');
-  registerBtn.textContent = 'Creating Account...';
-  registerBtn.disabled = true;
-  
-  const result = await registerUser(name, email, password);
-  
-  if (result.success) {
-    if (result.token) {
-      localStorage.setItem('token', result.token);
-    }
-    
-    const loginResult = await loginUser(email, password);
-    if (loginResult.success) {
-      currentUser = email;
-      localStorage.setItem('currentUser', email);
-      showCountdownScreen();
-    }
-  } else {
-    showAuthError(result.error, 'registerForm');
-  }
-  
-  registerBtn.textContent = 'Create Account';
-  registerBtn.disabled = false;
-}
-
-function handleLogout() {
-  currentUser = null;
-  localStorage.removeItem('currentUser');
-  localStorage.removeItem('token');
-  document.getElementById('userMenu').classList.add('hidden');
-  
-  document.getElementById('appContainer').classList.remove('visible');
-  setTimeout(() => {
-    showLoginScreen();
-  }, 500);
-}
-
-function toggleUserMenu() {
-  document.getElementById('userMenu').classList.toggle('hidden');
-}
-
-function showAuthError(message, formId) {
-  removeAuthErrors();
-  
-  const errorEl = document.createElement('div');
-  errorEl.className = 'auth-error bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4';
-  errorEl.textContent = message;
-  
-  const currentForm = document.getElementById(formId);
-  currentForm.insertBefore(errorEl, currentForm.firstChild);
-  
-  setTimeout(() => {
-    if (errorEl.parentNode) {
-      errorEl.remove();
-    }
-  }, 5000);
-}
-
-function removeAuthErrors() {
-  const existingErrors = document.querySelectorAll('.auth-error');
-  existingErrors.forEach(error => error.remove());
-}
-
-function populateSubjects() {
-  const select = document.getElementById("manualSubjects");
-  select.innerHTML = "";
-  
-  units.forEach(unit => {
-    const group = document.createElement("optgroup");
-    group.label = unit.title;
-    
-    unit.subjects.forEach(sub => {
-      const option = document.createElement("option");
-      option.value = sub;
-      option.textContent = sub;
-      group.appendChild(option);
-    });
-    
-    select.appendChild(group);
-  });
-}
-
-function updateCountdown() {
-  const now = new Date();
-  const countdownEl = document.getElementById("countdown");
-  const scareTextEl = document.getElementById("scareText");
-  
-  if (now < startTime) {
-    countdownEl.textContent = "⏳ Countdown starts at 18:18 today!";
-    scareTextEl.textContent = "Get ready, Counsel!";
-    return;
-  }
-  
-  const diff = deadline - now;
-  if (diff <= 0) {
-    countdownEl.textContent = "🚨 EXAMS HAVE BEGUN!";
-    scareTextEl.textContent = "All the best, Counsel!";
-    return;
-  }
-  
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-  const minutes = Math.floor((diff / (1000 * 60)) % 60);
-  const seconds = Math.floor((diff / 1000) % 60);
-  
-  countdownEl.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s left`;
-  scareTextEl.textContent = scareSayings[Math.floor(Math.random() * scareSayings.length)];
-  
-  if (days < 10) {
-    alertAudio.play().catch(e => console.log("Audio play failed:", e));
-  }
-}
-
-function renderUnits() {
-  const container = document.getElementById("unitsContainer");
-  container.innerHTML = "";
-  
-  const userData = getCurrentUserData();
-  const userProgress = userData?.progress || {};
-  
-  units.forEach((unit, uIndex) => {
-    const card = document.createElement("div");
-    card.className = `bg-white border border-gray-200 rounded-2xl shadow-sm p-5 subject-card`;
-    
-    const title = document.createElement("h3");
-    title.className = `font-bold text-white text-lg mb-3 p-2 rounded-lg bg-gradient-to-r ${unit.color}`;
-    title.textContent = unit.title;
-    card.appendChild(title);
-    
-    const list = document.createElement("ul");
-    list.className = "space-y-2";
-    
-    unit.subjects.forEach((subject, sIndex) => {
-      const li = document.createElement("li");
-      li.className = "flex items-center space-x-2";
-      
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.className = "w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500";
-      
-      const label = document.createElement("label");
-      label.textContent = subject;
-      label.className = "text-gray-700 flex-1";
-      
-      const key = `unit${uIndex}_subject${sIndex}`;
-      checkbox.checked = userProgress[key] === true;
-      
-      if (checkbox.checked) {
-        label.classList.add("completed");
-      }
-      
-      checkbox.addEventListener("change", () => {
-        const userData = getCurrentUserData();
-        if (!userData.progress) userData.progress = {};
-        userData.progress[key] = checkbox.checked;
-        saveCurrentUserData(userData);
-        
-        if (checkbox.checked) {
-          label.classList.add("completed");
-          showCompletionAlert(subject, unit.title);
+    window.editTest = (id) => {
+        const test = allTests.find(t => t.id === id);
+        if (!test) return;
+        document.getElementById('testCode').value = test.testCode;
+        document.getElementById('testName').value = test.testName;
+        const subjSelect = document.getElementById('testSubject');
+        if ([...subjSelect.options].some(opt => opt.value === test.subject)) {
+            subjSelect.value = test.subject;
+            document.getElementById('customSubjectGroup').style.display = 'none';
         } else {
-          label.classList.remove("completed");
+            subjSelect.value = "Other";
+            document.getElementById('customSubjectGroup').style.display = 'block';
+            document.getElementById('customSubjectInput').value = test.subject;
         }
-        
-        updateProgress();
-        updateStatistics();
-        renderStudyPlan();
-        updateDashboard();
-      });
-      
-      li.appendChild(checkbox);
-      li.appendChild(label);
-      list.appendChild(li);
-    });
-    
-    card.appendChild(list);
-    container.appendChild(card);
-  });
-}
+        document.getElementById('testDesc').value = test.description || '';
+        document.getElementById('testPdf').value = '';
+        editingId = id;
+        showMessage(`Editing: ${test.testCode}. Select a new PDF only if you want to replace the file.`, "success");
+    };
 
-function showCompletionAlert(subject, unitTitle) {
-  const alertDiv = document.createElement("div");
-  alertDiv.className = "fixed top-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm";
-  alertDiv.innerHTML = `
-    <div class="flex items-center">
-      <i class="fas fa-check-circle mr-2 text-xl"></i>
-      <div>
-        <p class="font-semibold">Subject Completed!</p>
-        <p class="text-sm">${subject} (${unitTitle})</p>
-      </div>
-    </div>
-  `;
-  
-  document.body.appendChild(alertDiv);
-  
-  setTimeout(() => {
-    alertDiv.remove();
-  }, 3000);
-}
-
-function updateProgress() {
-  const total = units.reduce((sum, u) => sum + u.subjects.length, 0);
-  const userData = getCurrentUserData();
-  const userProgress = userData?.progress || {};
-  
-  const done = units.flatMap((u, i) => 
-    u.subjects.map((_, j) => userProgress[`unit${i}_subject${j}`] === true)
-  ).filter(x => x).length;
-  
-  const percent = Math.round((done / total) * 100);
-  document.getElementById("progressBar").style.width = percent + "%";
-  document.getElementById("progressText").textContent = `${done}/${total} Subjects (${percent}%) Completed`;
-}
-
-function updateStatistics() {
-  const total = units.reduce((sum, u) => sum + u.subjects.length, 0);
-  const userData = getCurrentUserData();
-  const userProgress = userData?.progress || {};
-  
-  const done = units.flatMap((u, i) => 
-    u.subjects.map((_, j) => userProgress[`unit${i}_subject${j}`] === true)
-  ).filter(x => x).length;
-  
-  const remaining = total - done;
-  const totalSessions = studyPlan.reduce((sum, day) => sum + day.sessions.length, 0);
-  
-  const statsHTML = `
-    <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-      <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">${done}</div>
-      <div class="text-sm text-blue-800 dark:text-blue-300">Completed</div>
-    </div>
-    <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-      <div class="text-2xl font-bold text-green-600 dark:text-green-400">${remaining}</div>
-      <div class="text-sm text-green-800 dark:text-green-300">Remaining</div>
-    </div>
-    <div class="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-      <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">${totalSessions}</div>
-      <div class="text-sm text-purple-800 dark:text-purple-300">Sessions</div>
-    </div>
-    <div class="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-      <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">${Math.round((done/total)*100)}%</div>
-      <div class="text-sm text-orange-800 dark:text-orange-300">Progress</div>
-    </div>
-  `;
-  
-  document.getElementById('stats').innerHTML = statsHTML;
-}
-
-function addToPlan() {
-  const date = document.getElementById("manualDate").value;
-  const duration = document.getElementById("studyDuration").value;
-  const selected = Array.from(document.getElementById("manualSubjects").selectedOptions).map(o => o.value);
-  
-  if (!date || selected.length === 0) {
-    showErrorAlert("Please select a date and at least one subject!");
-    return;
-  }
-  
-  studyPlan.push({ date, duration, sessions: selected });
-  
-  const userData = getCurrentUserData();
-  userData.studyPlan = studyPlan;
-  saveCurrentUserData(userData);
-  
-  renderStudyPlan();
-  updateStatistics();
-  updateDashboard();
-  
-  document.getElementById("manualSubjects").selectedIndex = -1;
-}
-
-function showErrorAlert(message) {
-  const alertDiv = document.createElement("div");
-  alertDiv.className = "fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm";
-  alertDiv.innerHTML = `
-    <div class="flex items-center">
-      <i class="fas fa-exclamation-triangle mr-2 text-xl"></i>
-      <div>
-        <p class="font-semibold">Attention Needed</p>
-        <p class="text-sm">${message}</p>
-      </div>
-    </div>
-  `;
-  
-  document.body.appendChild(alertDiv);
-  
-  setTimeout(() => {
-    alertDiv.remove();
-  }, 3000);
-}
-
-function clearStudyPlan() {
-  if (studyPlan.length === 0) {
-    showErrorAlert("Study plan is already empty!");
-    return;
-  }
-  
-  if (confirm("Are you sure you want to clear your entire study plan?")) {
-    studyPlan = [];
-    
-    const userData = getCurrentUserData();
-    userData.studyPlan = studyPlan;
-    saveCurrentUserData(userData);
-    
-    renderStudyPlan();
-    updateStatistics();
-    updateDashboard();
-  }
-}
-
-function toggleView() {
-  const timetable = document.getElementById("timetableView");
-  const list = document.getElementById("listView");
-  const toggleBtn = document.getElementById("toggleView");
-  
-  isTimetableView = !isTimetableView;
-  
-  if (isTimetableView) {
-    timetable.classList.remove("hidden");
-    list.classList.add("hidden");
-    toggleBtn.innerHTML = '<i class="fas fa-th-large mr-1"></i>Toggle View';
-  } else {
-    timetable.classList.add("hidden");
-    list.classList.remove("hidden");
-    toggleBtn.innerHTML = '<i class="fas fa-list mr-1"></i>Toggle View';
-  }
-  
-  renderStudyPlan();
-}
-
-function renderStudyPlan() {
-  const timetable = document.getElementById("timetableView");
-  const list = document.getElementById("listView");
-  const planSection = document.getElementById("planSection");
-  const planStats = document.getElementById("planStats");
-  
-  timetable.innerHTML = "";
-  list.innerHTML = "";
-  
-  if (studyPlan.length === 0) {
-    planSection.classList.add("hidden");
-    return;
-  }
-  
-  planSection.classList.remove("hidden");
-  
-  studyPlan.sort((a, b) => new Date(a.date) - new Date(b.date));
-  
-  const totalSessions = studyPlan.reduce((sum, day) => sum + day.sessions.length, 0);
-  const totalHours = studyPlan.reduce((sum, day) => sum + (day.sessions.length * parseFloat(day.duration || 2)), 0);
-  planStats.textContent = `${studyPlan.length} days, ${totalSessions} sessions, ${totalHours} hours`;
-  
-  const weeks = groupStudyPlanByWeek(studyPlan);
-  renderTimetableView(weeks, timetable);
-  renderListView(studyPlan, list);
-}
-
-function groupStudyPlanByWeek(studyPlan) {
-  const weeks = [];
-  let currentWeek = [];
-  let currentWeekStart = null;
-  
-  studyPlan.forEach(day => {
-    const date = new Date(day.date);
-    const weekStart = getWeekStart(date);
-    
-    if (!currentWeekStart || weekStart.getTime() !== currentWeekStart.getTime()) {
-      if (currentWeek.length > 0) {
-        weeks.push(currentWeek);
-      }
-      currentWeek = [day];
-      currentWeekStart = weekStart;
-    } else {
-      currentWeek.push(day);
-    }
-  });
-  
-  if (currentWeek.length > 0) {
-    weeks.push(currentWeek);
-  }
-  
-  return weeks;
-}
-
-function getWeekStart(date) {
-  const day = date.getDay();
-  const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-  return new Date(date.setDate(diff));
-}
-
-function renderTimetableView(weeks, container) {
-  weeks.forEach((week, weekIndex) => {
-    const weekElement = document.createElement("div");
-    weekElement.className = "mb-8";
-    
-    const weekHeader = document.createElement("div");
-    weekHeader.className = "flex justify-between items-center mb-4 p-3 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-lg";
-    
-    const weekTitle = document.createElement("h3");
-    weekTitle.className = "font-bold text-indigo-700 text-lg";
-    weekTitle.textContent = `Week ${weekIndex + 1} (${formatDate(week[0].date)} - ${formatDate(week[week.length-1].date)})`;
-    
-    const weekStats = document.createElement("div");
-    weekStats.className = "text-sm text-indigo-600";
-    const weekSessions = week.reduce((sum, day) => sum + day.sessions.length, 0);
-    weekStats.textContent = `${weekSessions} sessions`;
-    
-    weekHeader.appendChild(weekTitle);
-    weekHeader.appendChild(weekStats);
-    weekElement.appendChild(weekHeader);
-    
-    const daysGrid = document.createElement("div");
-    daysGrid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4";
-    
-    week.forEach(day => {
-      const dayElement = document.createElement("div");
-      dayElement.className = "timetable-day bg-white border border-gray-200 rounded-xl p-4 shadow-sm";
-      
-      const dayHeader = document.createElement("div");
-      dayHeader.className = "flex justify-between items-center mb-3 pb-2 border-b border-gray-100";
-      
-      const dateElement = document.createElement("div");
-      dateElement.className = "font-semibold text-indigo-700";
-      dateElement.innerHTML = `<i class="far fa-calendar mr-2"></i>${formatDate(day.date)}`;
-      
-      const dayStats = document.createElement("div");
-      dayStats.className = "flex items-center space-x-2";
-      
-      const durationElement = document.createElement("span");
-      durationElement.className = "text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full";
-      durationElement.innerHTML = `<i class="far fa-clock mr-1"></i>${day.duration || 2}h/session`;
-      
-      const progressElement = document.createElement("span");
-      const progress = calculateDayProgress(day);
-      progressElement.className = `text-xs px-2 py-1 rounded-full ${progress === 100 ? 'bg-green-100 text-green-700' : progress >= 50 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`;
-      progressElement.textContent = `${progress}%`;
-      
-      const deleteBtn = document.createElement("button");
-      deleteBtn.className = "text-red-400 hover:text-red-600 transition-colors";
-      deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
-      deleteBtn.onclick = () => {
-        const index = studyPlan.findIndex(d => d.date === day.date);
-        if (index !== -1) {
-          studyPlan.splice(index, 1);
-          
-          const userData = getCurrentUserData();
-          userData.studyPlan = studyPlan;
-          saveCurrentUserData(userData);
-          
-          renderStudyPlan();
-          updateStatistics();
-          updateDashboard();
+    window.deleteTest = async (id) => {
+        if (!confirm("Delete this test permanently?")) return;
+        const test = allTests.find(t => t.id === id);
+        if (!test) return;
+        const newList = allTests.filter(t => t.id !== id);
+        try {
+            await saveTestsToGitHub(newList, `Delete law test: ${test.testCode}`);
+            await loadTests();
+            showMessage(`Deleted "${test.testCode}"`, "success");
+        } catch (err) {
+            showMessage("Delete failed: " + err.message, "error");
         }
-      };
-      
-      dayStats.appendChild(durationElement);
-      dayStats.appendChild(progressElement);
-      dayStats.appendChild(deleteBtn);
-      
-      dayHeader.appendChild(dateElement);
-      dayHeader.appendChild(dayStats);
-      dayElement.appendChild(dayHeader);
-      
-      const sessionsList = document.createElement("div");
-      sessionsList.className = "space-y-2";
-      
-      day.sessions.forEach(session => {
-        const sessionElement = document.createElement("div");
-        sessionElement.className = "session-card bg-gray-50 p-3 rounded-lg";
-        
-        const unit = units.find(u => u.subjects.includes(session));
-        const userData = getCurrentUserData();
-        const userProgress = userData?.progress || {};
-        const isCompleted = unit && userProgress[`unit${units.indexOf(unit)}_subject${unit.subjects.indexOf(session)}`] === true;
-        
-        sessionElement.className += ` ${unit ? unit.borderColor : 'border-l-gray-400'} ${isCompleted ? 'opacity-70' : ''}`;
-        
-        const sessionContent = document.createElement("div");
-        sessionContent.className = "flex justify-between items-center";
-        
-        const sessionTitle = document.createElement("div");
-        sessionTitle.className = `font-medium ${isCompleted ? 'line-through text-gray-500' : 'text-gray-700'}`;
-        sessionTitle.textContent = session;
-        
-        const sessionStatus = document.createElement("div");
-        sessionStatus.className = "text-xs";
-        
-        if (isCompleted) {
-          sessionStatus.innerHTML = '<i class="fas fa-check-circle text-green-500"></i>';
+    };
+
+    async function saveHandler() {
+        if (!githubToken) {
+            showMessage("❌ Please set your GitHub token first (click 'Set Token').", "error");
+            return;
+        }
+        const testCode = document.getElementById('testCode').value.trim();
+        const testName = document.getElementById('testName').value.trim();
+        let subject = document.getElementById('testSubject').value;
+        const customSubject = document.getElementById('customSubjectInput').value.trim();
+        const description = document.getElementById('testDesc').value.trim();
+        const pdfFile = document.getElementById('testPdf').files[0];
+
+        if (!testCode || !testName) {
+            showMessage("Test Code and Test Name are required.", "error");
+            return;
+        }
+        if (subject === "Other" && !customSubject) {
+            showMessage("Please enter a custom subject name.", "error");
+            return;
+        }
+        if (subject === "Other") subject = customSubject;
+
+        // Uniqueness check for code (ignore current if editing)
+        if (!editingId && allTests.some(t => t.testCode.toLowerCase() === testCode.toLowerCase())) {
+            showMessage(`Test code "${testCode}" already exists. Use a unique code.`, "error");
+            return;
+        }
+        if (editingId && allTests.some(t => t.id !== editingId && t.testCode.toLowerCase() === testCode.toLowerCase())) {
+            showMessage(`Test code "${testCode}" already used by another test.`, "error");
+            return;
+        }
+
+        let uploadedPdfName = null;
+        if (pdfFile) {
+            if (pdfFile.type !== 'application/pdf') {
+                showMessage("Only PDF files are allowed.", "error");
+                return;
+            }
+            const timestamp = Date.now();
+            uploadedPdfName = `${timestamp}_${pdfFile.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+            await uploadPDF(pdfFile, uploadedPdfName);
+        }
+
+        if (editingId !== null) {
+            const index = allTests.findIndex(t => t.id === editingId);
+            if (index !== -1) {
+                const updated = { ...allTests[index], testCode, testName, subject, description };
+                if (uploadedPdfName) updated.pdfFile = uploadedPdfName;
+                allTests[index] = updated;
+                await saveTestsToGitHub(allTests, `Update law test: ${testCode}`);
+                showMessage(`✅ Test "${testCode}" updated.`, "success");
+                resetForm();
+                await loadTests();
+            }
         } else {
-          sessionStatus.innerHTML = '<i class="far fa-circle text-gray-400"></i>';
+            if (!uploadedPdfName) {
+                showMessage("Please select a PDF question paper for the new test.", "error");
+                return;
+            }
+            const newId = allTests.length ? Math.max(...allTests.map(t => t.id)) + 1 : 1;
+            const newTest = {
+                id: newId,
+                testCode,
+                testName,
+                subject,
+                description: description || "",
+                pdfFile: uploadedPdfName,
+                addedDate: Date.now()
+            };
+            const newList = [...allTests, newTest];
+            await saveTestsToGitHub(newList, `Add law test: ${testCode}`);
+            showMessage(`✅ Test "${testCode}" added.`, "success");
+            resetForm();
+            await loadTests();
         }
-        
-        sessionContent.appendChild(sessionTitle);
-        sessionContent.appendChild(sessionStatus);
-        sessionElement.appendChild(sessionContent);
-        
-        sessionsList.appendChild(sessionElement);
-      });
-      
-      dayElement.appendChild(sessionsList);
-      daysGrid.appendChild(dayElement);
+    }
+
+    function resetForm() {
+        document.getElementById('testCode').value = '';
+        document.getElementById('testName').value = '';
+        document.getElementById('testSubject').value = 'Civil Law';
+        document.getElementById('customSubjectGroup').style.display = 'none';
+        document.getElementById('customSubjectInput').value = '';
+        document.getElementById('testDesc').value = '';
+        document.getElementById('testPdf').value = '';
+        editingId = null;
+    }
+
+    function showMessage(msg, type) {
+        const div = document.getElementById('adminMsg');
+        div.innerHTML = `<div class="message ${type}">${msg}</div>`;
+        setTimeout(() => div.innerHTML = '', 4000);
+    }
+
+    function updateTokenUI() {
+        const hasToken = githubToken && githubToken.length > 10;
+        const statusSpan = document.getElementById('tokenStatus');
+        if (hasToken) {
+            statusSpan.innerHTML = "🔑 Token active";
+            statusSpan.classList.add('active');
+        } else {
+            statusSpan.innerHTML = "⚠️ No token";
+            statusSpan.classList.remove('active');
+        }
+    }
+
+    function promptForToken() {
+        const token = prompt("Enter your GitHub Personal Access Token (needs 'repo' scope):");
+        if (token && token.trim()) {
+            githubToken = token.trim();
+            localStorage.setItem("test_gh_token", githubToken);
+            updateTokenUI();
+            loadTests();
+            showMessage("Token saved. You can now upload tests.", "success");
+        }
+    }
+
+    document.getElementById('setTokenBtn').addEventListener('click', promptForToken);
+    document.getElementById('saveBtn').addEventListener('click', saveHandler);
+    document.getElementById('cancelEditBtn').addEventListener('click', resetForm);
+    document.getElementById('testSubject').addEventListener('change', function() {
+        const customGroup = document.getElementById('customSubjectGroup');
+        customGroup.style.display = this.value === "Other" ? "block" : "none";
     });
-    
-    weekElement.appendChild(daysGrid);
-    container.appendChild(weekElement);
-  });
-}
 
-function renderListView(studyPlan, container) {
-  studyPlan.forEach((day, index) => {
-    const dayElement = document.createElement("div");
-    dayElement.className = "border border-gray-200 rounded-lg p-4 hover:shadow-md transition";
-    
-    const progress = calculateDayProgress(day);
-    
-    dayElement.innerHTML = `
-      <div class="flex justify-between mb-2">
-        <span class="font-semibold text-indigo-700">${formatDate(day.date)}</span>
-        <div class="flex items-center space-x-2">
-          <span class="text-sm ${progress === 100 ? 'text-green-500' : progress >= 50 ? 'text-yellow-500' : 'text-red-500'}">${progress}% Completed</span>
-          <button class="text-red-400 hover:text-red-600 delete-day" data-index="${index}">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-      </div>
-      <div class="text-sm text-gray-500 mb-2">
-        <i class="far fa-clock mr-1"></i>${day.duration || 2} hours per session
-      </div>
-      <ul class="list-disc ml-5 text-sm space-y-1">
-        ${day.sessions.map(session => {
-          const unit = units.find(u => u.subjects.includes(session));
-          const userData = getCurrentUserData();
-          const userProgress = userData?.progress || {};
-          const isCompleted = unit && userProgress[`unit${units.indexOf(unit)}_subject${unit.subjects.indexOf(session)}`] === true;
-          return `<li class="${isCompleted ? 'line-through text-gray-400' : ''}">${session} ${isCompleted ? '<i class="fas fa-check-circle text-green-500 ml-1"></i>' : ''}</li>`;
-        }).join("")}
-      </ul>
-    `;
-    
-    container.appendChild(dayElement);
-  });
-  
-  document.querySelectorAll('.delete-day').forEach(button => {
-    button.addEventListener('click', function() {
-      const index = parseInt(this.getAttribute('data-index'));
-      studyPlan.splice(index, 1);
-      
-      const userData = getCurrentUserData();
-      userData.studyPlan = studyPlan;
-      saveCurrentUserData(userData);
-      
-      renderStudyPlan();
-      updateStatistics();
-      updateDashboard();
-    });
-  });
-}
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m) { if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m; }); }
 
-function calculateDayProgress(day) {
-  const userData = getCurrentUserData();
-  const userProgress = userData?.progress || {};
-  
-  const done = day.sessions.filter(session => {
-    return units.some((unit, uIndex) => 
-      unit.subjects.includes(session) && 
-      userProgress[`unit${uIndex}_subject${unit.subjects.indexOf(session)}`] === true
-    );
-  }).length;
-  
-  return Math.round((done / day.sessions.length) * 100) || 0;
-}
-
-function formatDate(dateString) {
-  const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
-  return new Date(dateString).toLocaleDateString('en-US', options);
-}
-
-function toggleDarkMode() {
-  document.body.classList.toggle("dark-mode");
-  const button = document.getElementById("toggleDark");
-  
-  if (document.body.classList.contains("dark-mode")) {
-    button.innerHTML = '<i class="fas fa-sun mr-2"></i>Toggle Light Mode';
-  } else {
-    button.innerHTML = '<i class="fas fa-moon mr-2"></i>Toggle Dark Mode';
-  }
-}
-
-// Initialize the app when DOM is loaded
-document.addEventListener('DOMContentLoaded', init);
+    // Initial load
+    updateTokenUI();
+    loadTests();
 </script>
 </body>
 </html>
